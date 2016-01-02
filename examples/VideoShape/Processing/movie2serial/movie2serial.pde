@@ -46,12 +46,12 @@ Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Arduino\\OctoWS2811-ma
 //Movie myMovie = new Movie(this, ".\\20131111_191820.mp4");
 
 
-// ledPhysLocs array stores the physical location lookup for every LED in use
+// ledPhysLocs array stores the physical location lookup for every LED in use.
 // Array indexes are:
-//   - port index
-//   - LED strip number
-//   - LED number
-//   - x,y coordinate
+//   - Port index
+//   - LED strip index (Must have 8 LED strips)
+//   - LED index (All strips must have the same number of LEDs)
+//   - x,y coordinate. {-1, -1} is used as a placeholder to make all LED strips have the same length.
 int[][][][] ledPhysLocs = 
   { // Ports
     { // Strips
@@ -65,6 +65,12 @@ int[][][][] ledPhysLocs =
       {{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1}}
     }
   };
+
+// Final install has the following number of leds/strip:
+// 3: 379
+// 7: 378
+// others: 382
+
 
 float ledLocScaler = 10;
 int ledLocOffset = 0;
