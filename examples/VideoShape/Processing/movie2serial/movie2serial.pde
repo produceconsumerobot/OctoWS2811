@@ -41,8 +41,9 @@ import processing.serial.*;
 import java.awt.Rectangle;
 import java.lang.reflect.Array;
 
-//Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Arduino\\OctoWS2811-master\\OctoWS2811-master\\examples\\VideoDisplay\\Processing\\movie2serial\\20131111_191820.mp4");
-Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Arduino\\OctoWS2811-master\\OctoWS2811-master\\examples\\VideoDisplay\\Processing\\movie2serial\\2015_11_25_05_53_30_2015_12_02_04_49_42_AIA_304-hq.mp4");
+//Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShape\\Processing\\movie2serial\\HorzLineTest01_01.mov");
+Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShape\\Processing\\movie2serial\\LineTest01_01.mov");
+//Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Arduino\\OctoWS2811-master\\OctoWS2811-master\\examples\\VideoDisplay\\Processing\\movie2serial\\2015_11_25_05_53_30_2015_12_02_04_49_42_AIA_304-hq.mp4");
 //Movie myMovie = new Movie(this, ".\\20131111_191820.mp4");
 
 
@@ -50,19 +51,20 @@ Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Arduino\\OctoWS2811-ma
 // Array indexes are:
 //   - Port index
 //   - LED strip index (Must have 8 LED strips)
-//   - LED index (All strips must have the same number of LEDs)
-//   - x,y coordinate. {-1, -1} is used as a placeholder to make all LED strips have the same length.
+//   - LED index (All strips must have the same number of LED positions)
+//   - x,y coordinate. {-1, -1} is used as a placeholder to make all LED strips 
+//      have the same length and fill empty strips.
 int[][][][] ledPhysLocs = 
   { // Ports
     { // Strips
-      {{ 1, 0},{ 3, 0},{ 5, 0},{ 7, 0},{ 9, 0},{11, 0},{-1,-1}},
-      {{12, 1},{10, 1},{ 8, 1},{ 6, 1},{ 4, 1},{ 2, 1},{ 0, 1}},
-      {{ 1, 2},{ 3, 2},{ 5, 2},{ 7, 2},{ 9, 2},{11, 2},{-1,-1}},
-      {{12, 3},{10, 3},{ 8, 3},{ 6, 3},{ 4, 3},{ 2, 3},{ 0, 3}},
-      {{ 1, 4},{ 3, 4},{ 5, 4},{ 7, 4},{ 9, 4},{11, 4},{-1,-1}},
-      {{12, 5},{10, 5},{ 8, 5},{ 6, 5},{ 4, 5},{ 2, 5},{ 0, 5}},
-      {{ 1, 6},{ 3, 6},{ 5, 6},{ 7, 6},{ 9, 6},{11, 6},{-1,-1}},
-      {{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1}}
+      {{ 1, 0},{ 3, 0},{ 5, 0},{ 7, 0},{ 9, 0},{11, 0},{13, 0},{-1,-1}},
+      {{ 1, 2},{ 3, 2},{ 5, 2},{ 7, 2},{ 9, 2},{11, 2},{13, 2},{-1,-1}},
+      {{ 1, 4},{ 3, 4},{ 5, 4},{ 7, 4},{ 9, 4},{11, 4},{13, 4},{-1,-1}},
+      {{ 1, 6},{ 3, 6},{ 5, 6},{ 7, 6},{ 9, 6},{11, 6},{13, 6},{-1,-1}},
+      {{14, 1},{12, 1},{10, 1},{ 8, 1},{ 6, 1},{ 4, 1},{ 2, 1},{ 0, 1}},
+      {{14, 3},{12, 3},{10, 3},{ 8, 3},{ 6, 3},{ 4, 3},{ 2, 3},{ 0, 3}},
+      {{14, 5},{12, 5},{10, 5},{ 8, 5},{ 6, 5},{ 4, 5},{ 2, 5},{ 0, 5}},
+      {{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1}}
     }
   };
 
@@ -72,8 +74,9 @@ int[][][][] ledPhysLocs =
 // others: 382
 
 
-float ledLocScaler = 10;
-int ledLocOffset = 0;
+float ledLocScaler = 30;
+int ledLocXOffset = 30;
+int ledLocYOffset = 65;
 int ledLocAveArea = 0;
 color[] drawColors = {color(255,0,0), color(0,255,0)};
 
@@ -116,7 +119,7 @@ int maxPorts=24; // maximum number of serial ports
 Serial[] ledSerial = new Serial[maxPorts];     // each port's actual Serial port
 Rectangle[] ledArea = new Rectangle[maxPorts]; // the area of the movie each port gets, in % (0-100)
 boolean[] ledLayout = new boolean[maxPorts];   // layout of rows, true = even is left->right
-PImage[] ledImage = new PImage[maxPorts];      // image sent to each port
+PImage ledImage;      // image sent to each port
 int[] gammatable = new int[256];
 int errorCount=0;
 float framerate=0;
@@ -146,6 +149,37 @@ void movieEvent(Movie m) {
   //if (framerate == 0) framerate = m.getSourceFrameRate();
   framerate = 30.0; // TODO, how to read the frame rate???
   
+  
+  // ShapeDisplay code
+  for (int p=0; p < numPorts; p++) {  
+    // Copy the video frame to a PImage
+    // ToDo: make ledImage a single PImage rather than array
+    //ledImage[p].copy(m);
+    //println("m=" + m.width + "," + m.height);
+    ledImage = new PImage(m.width, m.height);
+    ledImage.copy(m, 0, 0, m.width, m.height, 0, 0, m.width, m.height);
+    byte[] ledData = new byte[(ledPhysLocs[p].length * ledPhysLocs[p][0].length * 3) + 3];
+    
+    //println("image=" + ledImage.width + "," + ledImage.height);
+    shape2data(ledImage, ledData, p);
+    
+    if (p == 0) {
+      ledData[0] = '*';  // first Teensy is the frame sync master
+      int usec = (int)((1000000.0 / framerate) * 0.75);
+      ledData[1] = (byte)(usec);   // request the frame sync pulse
+      ledData[2] = (byte)(usec >> 8); // at 75% of the frame time
+    } else {
+      ledData[0] = '%';  // others sync to the master board
+      ledData[1] = 0;
+      ledData[2] = 0;
+    }
+    // send the raw data to the LEDs  :-)
+    ledSerial[p].write(ledData); 
+  }
+  
+  
+  /*
+  // Original VideoDisplay code
   for (int i=0; i < numPorts; i++) {    
     // copy a portion of the movie's image to the LED image
     int xoffset = percentage(m.width, ledArea[i].x);
@@ -170,8 +204,44 @@ void movieEvent(Movie m) {
     // send the raw data to the LEDs  :-)
     ledSerial[i].write(ledData); 
   }
+  */
 }
 
+// Convert 
+void shape2data(PImage image, byte[] data, int port) {
+  int offset = 3;
+  int mask;
+  int pixel[] = new int[8];
+    
+  for (int l=0; l<ledPhysLocs[port][0].length; l++) {
+    for (int s=0; s < 8; s++) {
+      
+      // get position in image.pixels
+      // pixel[s] = x + (y * w)
+      if (ledPhysLocs[port][s][l][0] < 0 || ledPhysLocs[port][s][l][1] < 0) {
+        pixel[s] = 0;
+      } else {
+        int pixNum = int(ledPhysLocs[port][s][l][0]*ledLocScaler+ledLocXOffset + // x offset
+          (ledPhysLocs[port][s][l][1]*ledLocScaler+ledLocYOffset) * image.width);
+        //println(pixNum + "," + image.width+ "," + image.height + "," + image.pixels.length);
+        pixel[s] = image.pixels[pixNum];
+      }
+       
+      // convert color
+      pixel[s] = colorWiring(pixel[s]);
+    }
+            
+    // convert 8 pixels to 24 bytes
+    for (mask = 0x800000; mask != 0; mask >>= 1) {
+      byte b = 0;
+      for (int s=0; s < 8; s++) {
+        if ((pixel[s] & mask) != 0) b |= (1 << s);
+      }
+      data[offset++] = b;
+    }
+  }
+}
+    
 // image2data converts an image to OctoWS2811's raw data format.
 // The number of vertical pixels in the image must be a multiple
 // of 8.  The data array must be the proper size for the image.
@@ -209,6 +279,7 @@ void image2data(PImage image, byte[] data, boolean layout) {
       }
     }
   } 
+  
 }
 
 // translate the 24 bit color from RGB to the actual
@@ -254,7 +325,7 @@ void serialConfigure(String portName) {
     return;
   }
   // only store the info and increase numPorts if Teensy responds properly
-  ledImage[numPorts] = new PImage(Integer.parseInt(param[0]), Integer.parseInt(param[1]), RGB);
+  //ledImage[numPorts] = new PImage(Integer.parseInt(param[0]), Integer.parseInt(param[1]), RGB);
   ledArea[numPorts] = new Rectangle(Integer.parseInt(param[5]), Integer.parseInt(param[6]),
                      Integer.parseInt(param[7]), Integer.parseInt(param[8]));
   ledLayout[numPorts] = (Integer.parseInt(param[5]) == 0);
@@ -279,8 +350,8 @@ void draw() {
           
           stroke(255,255,255);     
           if (ledPhysLocs[p][s][l][0] != -1 && ledPhysLocs[p][s][l][1] != -1) {
-            rect(ledPhysLocs[p][s][l][0]*ledLocScaler+ledLocOffset, 
-                 ledPhysLocs[p][s][l][1]*ledLocScaler+ledLocOffset, 
+            rect(ledPhysLocs[p][s][l][0]*ledLocScaler+ledLocXOffset, 
+                 ledPhysLocs[p][s][l][1]*ledLocScaler+ledLocYOffset, 
                  ledLocAveArea+2, ledLocAveArea+2);
           }
           /*
@@ -302,6 +373,7 @@ void draw() {
   
   // then try to show what was most recently sent to the LEDs
   // by displaying all the images for each port.
+  /*
   for (int i=0; i < numPorts; i++) {
     // compute the intended size of the entire LED array
     int xsize = percentageInverse(ledImage[i].width, ledArea[i].width);
@@ -312,6 +384,7 @@ void draw() {
     // show what should appear on the LEDs
     image(ledImage[i], 240 - xsize / 2 + xloc, 10 + yloc);
   } 
+  */
 }
 
 // respond to mouse clicks as pause/play
