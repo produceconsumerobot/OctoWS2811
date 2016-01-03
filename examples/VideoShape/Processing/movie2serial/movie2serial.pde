@@ -448,8 +448,8 @@ void draw() {
                 int pixNum = int(ledPhysLocs[p][s][l][0]*ledLocScaler+ledLocXOffset + // x offset
                   (ledPhysLocs[p][s][l][1]*ledLocScaler+ledLocYOffset) * image.width);
                 //println(pixNum + "," + image.width+ "," + image.height + "," + image.pixels.length);
-                //println(ledPhysLocs[p][s][l][0] + "," + ledPhysLocs[p][s][l][1] + ","
-                //  + pixNum + "," + image.width + "," + image.height + "," + image.pixels.length);
+                println(ledPhysLocs[p][s][l][0] + "," + ledPhysLocs[p][s][l][1] + ","
+                  + pixNum + "," + image.width + "," + image.height + "," + image.pixels.length);
                 int pixel;
                 if (pixNum < image.pixels.length) {
                   pixel = image.pixels[pixNum];
@@ -511,9 +511,9 @@ void keyReleased() {
 
 void keyPressed() {
   if (key == '+') {
-    ledLocScaler = ledLocScaler * 1.1;
+    ledLocScaler = max(1, ledLocScaler + 1);
   } else if (key == '-') {
-    ledLocScaler = ledLocScaler / 1.1;
+    ledLocScaler = max(1, ledLocScaler - 1);
   } else if (keyCode == UP) {
     ledLocXOffset++;
   }  else if (keyCode == DOWN) {
@@ -523,9 +523,9 @@ void keyPressed() {
   }  else if (keyCode == DOWN) {
     ledLocYOffset = max(0, ledLocYOffset + 1);
   }  else if (keyCode == LEFT) {
-    ledLocXOffset = max(0, ledLocYOffset - 1);
+    ledLocXOffset = max(0, ledLocXOffset - 1);
   }  else if (keyCode == RIGHT) {
-    ledLocXOffset = max(0, ledLocYOffset + 1);
+    ledLocXOffset = max(0, ledLocXOffset + 1);
   }  
 }
 
