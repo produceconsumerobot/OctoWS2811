@@ -95,7 +95,10 @@ int[] gammatable = new int[256];
 int errorCount=0;
 float framerate=0;
 
-boolean setupComplete = false;
+boolean gridOn = true;
+boolean serialOn = true;
+boolean displayOn = true;
+boolean movieOn = true;
 
 void setup() {
   String[] list = Serial.list();
@@ -116,7 +119,7 @@ void setup() {
   for (int i=0; i < 256; i++) {
     gammatable[i] = (int)(pow((float)i / 255.0, gamma) * 255.0 + 0.5);
   }
-  size(480, 400);  // create the window
+  size(10, 10);  // create the window
   frame.setResizable(true);
   myMovie.loop();  // start the movie :-)
 }
@@ -127,8 +130,9 @@ void movieEvent(Movie m) {
   // read the movie's next frame
   m.read();
   
-  if (m.width != width || m.height != height) {
-    frame.setSize(m.width*2, m.height);
+  if (m.width > width || m.height > height) {
+    println("reset frame size: " + m.width +","+ m.height +","+ width +","+ height);
+    frame.setSize(m.width*2, m.height+40);
     //frame.setResizable(false);
   }
   
@@ -136,30 +140,32 @@ void movieEvent(Movie m) {
   framerate = 30.0; // TODO, how to read the frame rate???
   
   
-  // ShapeDisplay code
-  for (int p=0; p < numPorts; p++) {  
-    // Copy the video frame to a PImage
-    // ToDo: make ledImage a single PImage rather than array
-    ledImage = new PImage(m.width, m.height);
-    ledImage.copy(m, 0, 0, m.width, m.height, 0, 0, m.width, m.height);
-    byte[] ledData = new byte[(ledPhysLocs[p].length * ledPhysLocs[p][0].length * 3) + 3];
-    
-    // Extract LED data from the image
-    shape2data(ledImage, ledData, p);
-    
-    if (p == 0) {
-      ledData[0] = '*';  // first Teensy is the frame sync master
-      int usec = (int)((1000000.0 / framerate) * 0.75);
-      ledData[1] = (byte)(usec);   // request the frame sync pulse
-      ledData[2] = (byte)(usec >> 8); // at 75% of the frame time
-    } else {
-      ledData[0] = '%';  // others sync to the master board
-      ledData[1] = 0;
-      ledData[2] = 0;
-    }
-    // send the raw data to the LEDs  :-)
-    ledSerial[p].write(ledData); 
-  }                   
+  if (serialOn) {
+    // ShapeDisplay code
+    for (int p=0; p < numPorts; p++) {  
+      // Copy the video frame to a PImage
+      // ToDo: make ledImage a single PImage rather than array
+      ledImage = new PImage(m.width, m.height);
+      ledImage.copy(m, 0, 0, m.width, m.height, 0, 0, m.width, m.height);
+      byte[] ledData = new byte[(ledPhysLocs[p].length * ledPhysLocs[p][0].length * 3) + 3];
+      
+      // Extract LED data from the image
+      shape2data(ledImage, ledData, p);
+      
+      if (p == 0) {
+        ledData[0] = '*';  // first Teensy is the frame sync master
+        int usec = (int)((1000000.0 / framerate) * 0.75);
+        ledData[1] = (byte)(usec);   // request the frame sync pulse
+        ledData[2] = (byte)(usec >> 8); // at 75% of the frame time
+      } else {
+        ledData[0] = '%';  // others sync to the master board
+        ledData[1] = 0;
+        ledData[2] = 0;
+      }
+      // send the raw data to the LEDs  :-)
+      ledSerial[p].write(ledData); 
+    }         
+  }    
 }
 
 // Convert 
@@ -181,7 +187,11 @@ void shape2data(PImage image, byte[] data, int port) {
         int pixNum = int(ledPhysLocs[port][s][l][0]*ledLocScaler+ledLocXOffset + // x offset
           (ledPhysLocs[port][s][l][1]*ledLocScaler+ledLocYOffset) * image.width);
         //println(pixNum + "," + image.width+ "," + image.height + "," + image.pixels.length);
-        pixel[s] = image.pixels[pixNum];
+        if (pixNum < image.pixels.length) {
+          pixel[s] = image.pixels[pixNum];
+        } else {
+          pixel[s] = 0;
+        }
       }
        
       // convert color
@@ -371,8 +381,10 @@ class Coordinate {
 
 // draw runs every time the screen is redrawn - show the movie...
 void draw() {
-  // show the original video
-  image(ledImage, 0, 0);
+  if (movieOn) {
+    // show the original video
+    image(ledImage, 0, 0);
+  }
   
   // ToDo: Handle case where first LED x,y is -1
   Coordinate locMin = new Coordinate(ledPhysLocs[0][0][0][0], ledPhysLocs[0][0][0][1]);
@@ -393,50 +405,57 @@ void draw() {
             if (ledPhysLocs[p][s][l][0] > locMax.x) locMax.x = ledPhysLocs[p][s][l][0];
             if (ledPhysLocs[p][s][l][1] > locMax.y) locMax.y = ledPhysLocs[p][s][l][1];
             
-            stroke(255,255,255);     
-            rect(ledPhysLocs[p][s][l][0]*ledLocScaler+ledLocXOffset, 
-                 ledPhysLocs[p][s][l][1]*ledLocScaler+ledLocYOffset, 
-                 ledLocAveArea+2, ledLocAveArea+2);
-          
-            stroke(0,0,0);
-            rect(ledPhysLocs[p][s][l][0]*ledLocScaler+ledLocXOffset, 
-                 ledPhysLocs[p][s][l][1]*ledLocScaler+ledLocYOffset, 
-                 ledLocAveArea+4, ledLocAveArea+4);
+            if (gridOn) {
+              stroke(255,255,255);     
+              rect(ledPhysLocs[p][s][l][0]*ledLocScaler+ledLocXOffset, 
+                   ledPhysLocs[p][s][l][1]*ledLocScaler+ledLocYOffset, 
+                   ledLocAveArea+2, ledLocAveArea+2);
+            
+              stroke(0,0,0);
+              rect(ledPhysLocs[p][s][l][0]*ledLocScaler+ledLocXOffset, 
+                   ledPhysLocs[p][s][l][1]*ledLocScaler+ledLocYOffset, 
+                   ledLocAveArea+4, ledLocAveArea+4);
+            }
           }
         popMatrix();          
       }
     }
   }
   
-  // Draw the sampled pixels to visualize LED data
-  if (ledImage.width !=0 && ledImage.height != 0) {
-    pushMatrix();
-      float drawRad = 0.7; // Radius of the drawn rectangles
-      
-      // Calculate factor by which to scale up LED grid
-      // ToDo: figure out why drawRad*2.5 is required (expected drawRad*2) 
-      float scaleFactor = min(ledImage.width / (locMax.x - locMin.x + drawRad*2.5), 
-        ledImage.height / (locMax.y - locMin.y + drawRad*2.5)); 
-      translate(ledImage.width, 0); // Translate to sit next to movie
-      scale(scaleFactor); // Scale up to fill space
-      translate(-locMin.x + drawRad, -locMin.y + drawRad); // Translate LED locations to start at origin
-      rectMode(RADIUS);
-      
-      // ToDo: Is copying image required?
-      PImage image = new PImage(ledImage.width, ledImage.height);
-      image.copy(ledImage, 0, 0, ledImage.width, ledImage.height, 0, 0, ledImage.width, ledImage.height);
-      
-      for (int p=0; p<ledPhysLocs.length; p++) {
-        for (int s=0; s<ledPhysLocs[p].length; s++) {
-          for (int l=0; l<ledPhysLocs[p][s].length; l++) {
-            if (ledPhysLocs[p][s][l][0] != -1 && ledPhysLocs[p][s][l][1] != -1) {
-              int pixNum = int(ledPhysLocs[p][s][l][0]*ledLocScaler+ledLocXOffset + // x offset
-                (ledPhysLocs[p][s][l][1]*ledLocScaler+ledLocYOffset) * image.width);
-              //println(pixNum + "," + image.width+ "," + image.height + "," + image.pixels.length);
-              //println(ledPhysLocs[p][s][l][0] + "," + ledPhysLocs[p][s][l][1] + ","
-              //  + pixNum + "," + image.width + "," + image.height + "," + image.pixels.length);
-              if (pixNum < image.pixels.length) {
-                int pixel = image.pixels[pixNum];
+  if (displayOn) {
+    // Draw the sampled pixels to visualize LED data
+    if (ledImage.width !=0 && ledImage.height != 0) {
+      pushMatrix();
+        float drawRad = 0.7; // Radius of the drawn rectangles
+        
+        // Calculate factor by which to scale up LED grid
+        // ToDo: figure out why drawRad*2.5 is required (expected drawRad*2) 
+        float scaleFactor = min(ledImage.width / (locMax.x - locMin.x + drawRad*2.5), 
+          ledImage.height / (locMax.y - locMin.y + drawRad*2.5)); 
+        translate(ledImage.width, 0); // Translate to sit next to movie
+        scale(scaleFactor); // Scale up to fill space
+        translate(-locMin.x + drawRad, -locMin.y + drawRad); // Translate LED locations to start at origin
+        rectMode(RADIUS);
+        
+        // ToDo: Is copying image required?
+        PImage image = new PImage(ledImage.width, ledImage.height);
+        image.copy(ledImage, 0, 0, ledImage.width, ledImage.height, 0, 0, ledImage.width, ledImage.height);
+        
+        for (int p=0; p<ledPhysLocs.length; p++) {
+          for (int s=0; s<ledPhysLocs[p].length; s++) {
+            for (int l=0; l<ledPhysLocs[p][s].length; l++) {
+              if (ledPhysLocs[p][s][l][0] != -1 && ledPhysLocs[p][s][l][1] != -1) {
+                int pixNum = int(ledPhysLocs[p][s][l][0]*ledLocScaler+ledLocXOffset + // x offset
+                  (ledPhysLocs[p][s][l][1]*ledLocScaler+ledLocYOffset) * image.width);
+                //println(pixNum + "," + image.width+ "," + image.height + "," + image.pixels.length);
+                //println(ledPhysLocs[p][s][l][0] + "," + ledPhysLocs[p][s][l][1] + ","
+                //  + pixNum + "," + image.width + "," + image.height + "," + image.pixels.length);
+                int pixel;
+                if (pixNum < image.pixels.length) {
+                  pixel = image.pixels[pixNum];
+                } else {
+                  pixel = 0;
+                }
                 //blendMode(ADD);
                 noStroke();
                 fill(pixel);
@@ -444,11 +463,10 @@ void draw() {
                 //println((ledPhysLocs[p][s][l][0]-locMin.x + drawRad*2) * scaleFactor +ledImage.width, width);
               }
             }
-  
           }
         }
-      }
-    popMatrix();
+      popMatrix();
+    }
   }
   
   // then try to show what was most recently sent to the LEDs
@@ -477,6 +495,38 @@ void mousePressed() {
     myMovie.play();
     isPlaying = true;
   }
+}
+
+void keyReleased() {
+  if (key == 's') {
+    serialOn = !serialOn;
+  } else if (key == 'm') {
+    movieOn = !movieOn;
+  } else if (key == 'd') {
+    displayOn = !displayOn;
+  } else if (key == 'g') {
+    gridOn = !gridOn;
+  }
+}
+
+void keyPressed() {
+  if (key == '+') {
+    ledLocScaler = ledLocScaler * 1.1;
+  } else if (key == '-') {
+    ledLocScaler = ledLocScaler / 1.1;
+  } else if (keyCode == UP) {
+    ledLocXOffset++;
+  }  else if (keyCode == DOWN) {
+    ledLocXOffset--;
+  } else if (keyCode == UP) {
+    ledLocYOffset = max(0, ledLocYOffset - 1);
+  }  else if (keyCode == DOWN) {
+    ledLocYOffset = max(0, ledLocYOffset + 1);
+  }  else if (keyCode == LEFT) {
+    ledLocXOffset = max(0, ledLocYOffset - 1);
+  }  else if (keyCode == RIGHT) {
+    ledLocXOffset = max(0, ledLocYOffset + 1);
+  }  
 }
 
 // scale a number by a percentage, from 0 to 100

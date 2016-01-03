@@ -80,23 +80,13 @@
 #define VIDEO_WIDTH    100
 #define VIDEO_HEIGHT   100
 
-//#define VIDEO_XOFFSET  0
-//#define VIDEO_YOFFSET  0     // display upper half
-//#define VIDEO_WIDTH    100
-//#define VIDEO_HEIGHT   50
-
-//#define VIDEO_XOFFSET  0
-//#define VIDEO_YOFFSET  50    // display lower half
-//#define VIDEO_WIDTH    100
-//#define VIDEO_HEIGHT   50
-
 // ledPhysLocs array stores the physical location lookup for every LED in use.
 // Array indexes are:
 //   - LED strip index (Must have 8 LED strips)
 //   - LED index (All strips must have the same number of LED positions)
 //   - x,y coordinate. {-1, -1} is used as a placeholder to make all LED strips 
 //      have the same length and fill empty strips.
-int8_t ledPhysLocs[8][8][2]  = 
+/*int8_t ledPhysLocs[8][8][2]  = 
   { // Strips
     {{ 1, 0},{ 3, 0},{ 5, 0},{ 7, 0},{ 9, 0},{11, 0},{13, 0},{-1,-1}},
     {{ 1, 2},{ 3, 2},{ 5, 2},{ 7, 2},{ 9, 2},{11, 2},{13, 2},{-1,-1}},
@@ -107,6 +97,10 @@ int8_t ledPhysLocs[8][8][2]  =
     {{14, 5},{12, 5},{10, 5},{ 8, 5},{ 6, 5},{ 4, 5},{ 2, 5},{ 0, 5}},
     {{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1}}
   };
+  */
+  
+#include "led_sun_phys_locs_01.h"
+//#include "sean_travel_phys_locs_01.h"
 
 const int ledsPerStrip = sizeof(ledPhysLocs[0])/sizeof(ledPhysLocs[0][0]);
 
@@ -119,6 +113,12 @@ const int config = WS2811_800kHz; // color config is on the PC side
 OctoWS2811 leds(ledsPerStrip, displayMemory, drawingMemory, config);
 
 void setup() {
+  // Blink LED to show Teensy is working properly
+  pinMode(13, OUTPUT);
+  digitalWrite(13, HIGH);
+  delay(3000);
+  digitalWrite(13, LOW);
+  
   pinMode(12, INPUT_PULLUP); // Frame Sync
   Serial.setTimeout(50);
   leds.begin();
