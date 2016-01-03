@@ -64,8 +64,8 @@
 // are arranged.  If 0, each strip begins on the left for its first row,
 // then goes right to left for its second row, then left to right,
 // zig-zagging for each successive row.
-#define LED_WIDTH      8   // number of LEDs horizontally
-#define LED_HEIGHT     8   // number of LEDs vertically (must be multiple of 8)
+#define LED_WIDTH      60   // number of LEDs horizontally
+#define LED_HEIGHT     64   // number of LEDs vertically (must be multiple of 8)
 #define LED_LAYOUT     0    // 0 = even rows left->right, 1 = even rows right->left
 
 // The portion of the video image to show on this set of LEDs.  All 4 numbers
@@ -90,8 +90,25 @@
 //#define VIDEO_WIDTH    100
 //#define VIDEO_HEIGHT   50
 
+// ledPhysLocs array stores the physical location lookup for every LED in use.
+// Array indexes are:
+//   - LED strip index (Must have 8 LED strips)
+//   - LED index (All strips must have the same number of LED positions)
+//   - x,y coordinate. {-1, -1} is used as a placeholder to make all LED strips 
+//      have the same length and fill empty strips.
+int8_t ledPhysLocs[8][8][2]  = 
+  { // Strips
+    {{ 1, 0},{ 3, 0},{ 5, 0},{ 7, 0},{ 9, 0},{11, 0},{13, 0},{-1,-1}},
+    {{ 1, 2},{ 3, 2},{ 5, 2},{ 7, 2},{ 9, 2},{11, 2},{13, 2},{-1,-1}},
+    {{ 1, 4},{ 3, 4},{ 5, 4},{ 7, 4},{ 9, 4},{11, 4},{13, 4},{-1,-1}},
+    {{ 1, 6},{ 3, 6},{ 5, 6},{ 7, 6},{ 9, 6},{11, 6},{13, 6},{-1,-1}},
+    {{14, 1},{12, 1},{10, 1},{ 8, 1},{ 6, 1},{ 4, 1},{ 2, 1},{ 0, 1}},
+    {{14, 3},{12, 3},{10, 3},{ 8, 3},{ 6, 3},{ 4, 3},{ 2, 3},{ 0, 3}},
+    {{14, 5},{12, 5},{10, 5},{ 8, 5},{ 6, 5},{ 4, 5},{ 2, 5},{ 0, 5}},
+    {{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1}}
+  };
 
-const int ledsPerStrip = LED_WIDTH * LED_HEIGHT / 8;
+const int ledsPerStrip = sizeof(ledPhysLocs[0])/sizeof(ledPhysLocs[0][0]);
 
 DMAMEM int displayMemory[ledsPerStrip*6];
 int drawingMemory[ledsPerStrip*6];
@@ -102,7 +119,6 @@ const int config = WS2811_800kHz; // color config is on the PC side
 OctoWS2811 leds(ledsPerStrip, displayMemory, drawingMemory, config);
 
 void setup() {
-  // ToDo: add 3 second LED blink
   pinMode(12, INPUT_PULLUP); // Frame Sync
   Serial.setTimeout(50);
   leds.begin();
@@ -215,6 +231,34 @@ void loop() {
   } else if (startChar == '?') {
     // when the video application asks, give it all our info
     // for easy and automatic configuration
+    int nStrips = sizeof(ledPhysLocs)/sizeof(ledPhysLocs[0]);
+    int nLedsPerStrip = sizeof(ledPhysLocs[0])/sizeof(ledPhysLocs[0][0]);
+    int nCoords = sizeof(ledPhysLocs[0][0])/sizeof(int8_t);
+     
+    Serial.print(nStrips);
+    Serial.print(',');
+    Serial.print(nLedsPerStrip);
+    Serial.print(',');
+    Serial.print(nCoords);
+    Serial.print(',');
+    Serial.println();
+    Serial.print('{');
+    
+    for (int s=0; s<nStrips; s++) {
+      Serial.print('{');
+      for (int l=0; l<nLedsPerStrip; l++) {
+        Serial.print('{');
+        Serial.print(ledPhysLocs[s][l][0]);
+        Serial.print(',');
+        Serial.print(ledPhysLocs[s][l][1]);
+        Serial.print(',');
+        Serial.print('}');
+      }
+      Serial.print('}');
+    }
+    Serial.print('}');
+    Serial.println();
+    /*
     Serial.print(LED_WIDTH);
     Serial.write(',');
     Serial.print(LED_HEIGHT);
@@ -239,6 +283,7 @@ void loop() {
     Serial.write(',');
     Serial.print(0);
     Serial.println();
+    */
 
   } else if (startChar >= 0) {
     // discard unknown characters

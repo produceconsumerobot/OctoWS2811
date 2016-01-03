@@ -54,7 +54,8 @@ Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Arduino\\OctoWS2811-ma
 //   - LED index (All strips must have the same number of LED positions)
 //   - x,y coordinate. {-1, -1} is used as a placeholder to make all LED strips 
 //      have the same length and fill empty strips.
-int[][][][] ledPhysLocs = 
+int[][][][] ledPhysLocs;
+/*= 
   { // Ports
     { // Strips
       {{ 1, 0},{ 3, 0},{ 5, 0},{ 7, 0},{ 9, 0},{11, 0},{13, 0},{-1,-1}},
@@ -67,6 +68,7 @@ int[][][][] ledPhysLocs =
       {{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1}}
     }
   };
+  */
 
 // Final install has the following number of leds/strip:
 // 3: 379
@@ -93,14 +95,23 @@ int[] gammatable = new int[256];
 int errorCount=0;
 float framerate=0;
 
+boolean setupComplete = false;
+
 void setup() {
   String[] list = Serial.list();
   delay(20);
   println("Serial Ports List:");
   println(list);
-  serialConfigure("COM22");
-  //serialConfigure("/dev/ttyACM0");  // change these to your port names
-  //serialConfigure("/dev/ttyACM1");
+  String[] serialPorts = {"COM22"};
+  // Allocate ledPhysLocs ports
+  ledPhysLocs = new int[serialPorts.length][][][];
+  for (int i=0; i<serialPorts.length; i++) {
+    serialConfigure(serialPorts[i]);
+  }
+  
+  // Print the LED physical locations to output    
+  printLedPhysLocs();
+  
   if (errorCount > 0) exit();
   for (int i=0; i < 256; i++) {
     gammatable[i] = (int)(pow((float)i / 255.0, gamma) * 255.0 + 0.5);
@@ -133,7 +144,7 @@ void movieEvent(Movie m) {
     ledImage.copy(m, 0, 0, m.width, m.height, 0, 0, m.width, m.height);
     byte[] ledData = new byte[(ledPhysLocs[p].length * ledPhysLocs[p][0].length * 3) + 3];
     
-    //println("image=" + ledImage.width + "," + ledImage.height);
+    // Extract LED data from the image
     shape2data(ledImage, ledData, p);
     
     if (p == 0) {
@@ -148,36 +159,7 @@ void movieEvent(Movie m) {
     }
     // send the raw data to the LEDs  :-)
     ledSerial[p].write(ledData); 
-  }
-  
-  
-  /*
-  // Original VideoDisplay code
-  for (int i=0; i < numPorts; i++) {    
-    // copy a portion of the movie's image to the LED image
-    int xoffset = percentage(m.width, ledArea[i].x);
-    int yoffset = percentage(m.height, ledArea[i].y);
-    int xwidth =  percentage(m.width, ledArea[i].width);
-    int yheight = percentage(m.height, ledArea[i].height);
-    ledImage[i].copy(m, xoffset, yoffset, xwidth, yheight,
-                     0, 0, ledImage[i].width, ledImage[i].height);
-    // convert the LED image to raw data
-    byte[] ledData =  new byte[(ledImage[i].width * ledImage[i].height * 3) + 3];
-    image2data(ledImage[i], ledData, ledLayout[i]);
-    if (i == 0) {
-      ledData[0] = '*';  // first Teensy is the frame sync master
-      int usec = (int)((1000000.0 / framerate) * 0.75);
-      ledData[1] = (byte)(usec);   // request the frame sync pulse
-      ledData[2] = (byte)(usec >> 8); // at 75% of the frame time
-    } else {
-      ledData[0] = '%';  // others sync to the master board
-      ledData[1] = 0;
-      ledData[2] = 0;
-    }
-    // send the raw data to the LEDs  :-)
-    ledSerial[i].write(ledData); 
-  }
-  */
+  }                   
 }
 
 // Convert 
@@ -185,6 +167,8 @@ void shape2data(PImage image, byte[] data, int port) {
   int offset = 3;
   int mask;
   int pixel[] = new int[8];
+  
+  //println(port +","+ ledPhysLocs[port][0][0][0] +","+ image.width);
     
   for (int l=0; l<ledPhysLocs[port][0].length; l++) {
     for (int s=0; s < 8; s++) {
@@ -292,16 +276,87 @@ void serialConfigure(String portName) {
     return;
   }
   String param[] = line.split(",");
-  if (param.length != 12) {
-    println("Error: port " + portName + " did not respond to LED config query");
+  if (param.length != 4) {
+    println("Error: port " + portName + " did not return array size from LED config query");
     errorCount++;
     return;
   }
-  // only store the info and increase numPorts if Teensy responds properly
-  //ledImage[numPorts] = new PImage(Integer.parseInt(param[0]), Integer.parseInt(param[1]), RGB);
-  ledArea[numPorts] = new Rectangle(Integer.parseInt(param[5]), Integer.parseInt(param[6]),
-                     Integer.parseInt(param[7]), Integer.parseInt(param[8]));
-  ledLayout[numPorts] = (Integer.parseInt(param[5]) == 0);
+
+  int nStrips = int(param[0]);
+  int nLedsPerStrip = int(param[1]);
+  int nCoords = int(param[2]);
+  
+  println(nStrips +","+ nLedsPerStrip +","+ nCoords);
+  
+  delay(50);
+  String serialData = ledSerial[numPorts].readStringUntil(123); // look for opening curly brace
+  // ToDo: check length of serialData
+  if (serialData == null) {
+    println("Error: port " + portName + " did not return leading { from LED config query");
+    errorCount++;
+    return;
+  }
+  
+  // Allocate ledPhysLocs strips
+  ledPhysLocs[numPorts] = new int[nStrips][][];
+   
+  for (int s = 0; s<nStrips; s++) {
+    serialData = ledSerial[numPorts].readStringUntil(123); // look for opening curly brace
+    // ToDo: check length of serialData
+    if (serialData == null) {
+      println("Error: port " + portName + " did not return strip { from LED config query");
+      errorCount++;
+      return;
+    }
+    
+    // Allocate ledPhysLocs LEDs
+    ledPhysLocs[numPorts][s] = new int[nLedsPerStrip][];
+    for (int l = 0; l<nLedsPerStrip; l++) {
+      serialData = ledSerial[numPorts].readStringUntil(123); // look for opening curly brace
+      // ToDo: check length of serialData
+      if (serialData == null) {
+        println("Error: port " + portName + " did not return LED { from LED config query");
+        errorCount++;
+        return;
+      }
+      serialData = ledSerial[numPorts].readStringUntil(125); // look for closing curly brace
+      // ToDo: check length of serialData
+      if (serialData == null) {
+        println("Error: port " + portName + " did not return LED } from LED config query");
+        errorCount++;
+        return;
+      }
+      
+      // Allocate ledPhysLocs coords
+      ledPhysLocs[numPorts][s][l] = new int[nCoords];
+      String coords[] = serialData.split(",");
+      for (int c = 0; c<nCoords; c++) {
+        ledPhysLocs[numPorts][s][l][c] = int(coords[c]);
+      }
+    }
+    serialData = ledSerial[numPorts].readStringUntil(125); // look for closing curly brace
+    // ToDo: check length of serialData
+    if (serialData == null) {
+      println("Error: port " + portName + " did not return strip } from LED config query");
+      errorCount++;
+      return;
+    }
+  }
+  serialData = ledSerial[numPorts].readStringUntil(125); // look for closing curly brace
+  // ToDo: check length of serialData
+  if (serialData == null) {
+    println("Error: port " + portName + " did not return final } from LED config query");
+    errorCount++;
+    return;
+  }
+  serialData = ledSerial[numPorts].readStringUntil(10); // look for line return
+  // ToDo: check length of serialData
+  if (serialData == null) {
+    println("Error: port " + portName + " did not return final CR from LED config query");
+    errorCount++;
+    return;
+  }
+      
   numPorts++;
 }
 
@@ -450,4 +505,34 @@ double percentageFloat(int percent) {
   if (percent ==  9) return 1.0 / 11.0;
   if (percent ==  8) return 1.0 / 12.0;
   return (double)percent / 100.0;
+}
+
+void printLedPhysLocs() {
+  println("ledPhysLocs=");
+  println("{");
+  for (int p=0; p<ledPhysLocs.length; p++) { 
+    println(" {");
+    for (int s=0; s<ledPhysLocs[p].length; s++) {
+      print("  {");
+      for (int l=0; l<ledPhysLocs[p][s].length; l++) {
+        print("{");
+        for (int c=0; c<ledPhysLocs[p][s][l].length; c++) {
+          if (ledPhysLocs[p][s][l][c] > -1 && ledPhysLocs[p][s][l][c] < 10) {
+            print(" "); // Print an extra character to keep printing justified
+          }
+          print(ledPhysLocs[p][s][l][c]);
+          if (c < ledPhysLocs[p][s][l].length - 1) {
+            print(","); // Print a comma if it's not the last element
+          }
+        }
+        print("}");
+        if (l < ledPhysLocs[p][s].length - 1) {
+          print(","); // Print a comma if it's not the last element
+        }
+      }
+      println("}");
+    }
+    println(" }");
+  }
+  println("}");
 }
