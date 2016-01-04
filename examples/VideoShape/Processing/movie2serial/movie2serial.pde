@@ -43,7 +43,8 @@ import java.lang.reflect.Array;
 
 //Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShape\\Processing\\movie2serial\\HorzLineTest01_01.mov");
 //Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShape\\Processing\\movie2serial\\LineTest01_01.mov");
-Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Arduino\\OctoWS2811-master\\OctoWS2811-master\\examples\\VideoDisplay\\Processing\\movie2serial\\2015_11_25_05_53_30_2015_12_02_04_49_42_AIA_304-hq.mp4");
+//Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Arduino\\OctoWS2811-master\\OctoWS2811-master\\examples\\VideoDisplay\\Processing\\movie2serial\\2015_11_25_05_53_30_2015_12_02_04_49_42_AIA_304-hq.mp4");
+Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShape\\Processing\\movie2serial\\039341505-hd-sun-surface-solar-flares-3d_H264_420.mov");
 //Movie myMovie = new Movie(this, ".\\20131111_191820.mp4");
 
 
@@ -96,7 +97,7 @@ int errorCount=0;
 float framerate=0;
 
 boolean gridOn = true;
-boolean serialOn = true;
+boolean serialOutOn = true;
 boolean displayOn = true;
 boolean movieOn = true;
 
@@ -130,23 +131,26 @@ void movieEvent(Movie m) {
   // read the movie's next frame
   m.read();
   
-  if (m.width > width || m.height > height) {
-    println("reset frame size: " + m.width +","+ m.height +","+ width +","+ height);
-    frame.setSize(m.width*2, m.height+40);
+  ledImage = new PImage(m.width, m.height);
+  ledImage.copy(m, 0, 0, m.width, m.height, 0, 0, m.width, m.height);
+  ledImage.resize(0,540);
+  
+  if (ledImage.width > width || ledImage.height > height) {
+    println("reset frame size: " + ledImage.width +","+ ledImage.height +","+ width +","+ height);
+    frame.setSize(ledImage.width*2, ledImage.height+40);
     //frame.setResizable(false);
   }
   
   //if (framerate == 0) framerate = m.getSourceFrameRate();
   framerate = 30.0; // TODO, how to read the frame rate???
   
-  
-  if (serialOn) {
+  // Copy the video frame to a PImage
+  // ToDo: make ledImage a single PImage rather than array
+
+  if (serialOutOn) {
     // ShapeDisplay code
     for (int p=0; p < numPorts; p++) {  
-      // Copy the video frame to a PImage
-      // ToDo: make ledImage a single PImage rather than array
-      ledImage = new PImage(m.width, m.height);
-      ledImage.copy(m, 0, 0, m.width, m.height, 0, 0, m.width, m.height);
+     
       byte[] ledData = new byte[(ledPhysLocs[p].length * ledPhysLocs[p][0].length * 3) + 3];
       
       // Extract LED data from the image
@@ -209,46 +213,6 @@ void shape2data(PImage image, byte[] data, int port) {
   }
 }
     
-// image2data converts an image to OctoWS2811's raw data format.
-// The number of vertical pixels in the image must be a multiple
-// of 8.  The data array must be the proper size for the image.
-void image2data(PImage image, byte[] data, boolean layout) {
-  int offset = 3;
-  int x, y, xbegin, xend, xinc, mask;
-  int linesPerPin = image.height / 8;
-  int pixel[] = new int[8];
-  
-  for (y = 0; y < linesPerPin; y++) {
-    if ((y & 1) == (layout ? 0 : 1)) {
-      // even numbered rows are left to right
-      xbegin = 0;
-      xend = image.width;
-      xinc = 1;
-    } else {
-      // odd numbered rows are right to left
-      xbegin = image.width - 1;
-      xend = -1;
-      xinc = -1;
-    }
-    for (x = xbegin; x != xend; x += xinc) {
-      for (int i=0; i < 8; i++) {
-        // fetch 8 pixels from the image, 1 for each pin
-        pixel[i] = image.pixels[x + (y + linesPerPin * i) * image.width];
-        pixel[i] = colorWiring(pixel[i]);
-      }
-      // convert 8 pixels to 24 bytes
-      for (mask = 0x800000; mask != 0; mask >>= 1) {
-        byte b = 0;
-        for (int i=0; i < 8; i++) {
-          if ((pixel[i] & mask) != 0) b |= (1 << i);
-        }
-        data[offset++] = b;
-      }
-    }
-  } 
-  
-}
-
 // translate the 24 bit color from RGB to the actual
 // order used by the LED wiring.  GRB is the most common.
 int colorWiring(int c) {
@@ -445,7 +409,8 @@ void draw() {
           for (int s=0; s<ledPhysLocs[p].length; s++) {
             for (int l=0; l<ledPhysLocs[p][s].length; l++) {
               if (ledPhysLocs[p][s][l][0] != -1 && ledPhysLocs[p][s][l][1] != -1) {
-                int pixNum = int(ledPhysLocs[p][s][l][0]*ledLocScaler+ledLocXOffset + // x offset
+                // Calculate the location sampled pixels
+                int pixNum = int(ledPhysLocs[p][s][l][0]*ledLocScaler+ledLocXOffset +
                   (ledPhysLocs[p][s][l][1]*ledLocScaler+ledLocYOffset) * image.width);
                 //println(pixNum + "," + image.width+ "," + image.height + "," + image.pixels.length);
                 //println(ledPhysLocs[p][s][l][0] + "," + ledPhysLocs[p][s][l][1] + ","
@@ -468,21 +433,6 @@ void draw() {
       popMatrix();
     }
   }
-  
-  // then try to show what was most recently sent to the LEDs
-  // by displaying all the images for each port.
-  /*
-  for (int i=0; i < numPorts; i++) {
-    // compute the intended size of the entire LED array
-    int xsize = percentageInverse(ledImage[i].width, ledArea[i].width);
-    int ysize = percentageInverse(ledImage[i].height, ledArea[i].height);
-    // computer this image's position within it
-    int xloc =  percentage(xsize, ledArea[i].x);
-    int yloc =  percentage(ysize, ledArea[i].y);
-    // show what should appear on the LEDs
-    image(ledImage[i], 240 - xsize / 2 + xloc, 10 + yloc);
-  } 
-  */
 }
 
 // respond to mouse clicks as pause/play
@@ -499,7 +449,7 @@ void mousePressed() {
 
 void keyReleased() {
   if (key == 's') {
-    serialOn = !serialOn;
+    serialOutOn = !serialOutOn;
   } else if (key == 'm') {
     movieOn = !movieOn;
   } else if (key == 'd') {
@@ -523,7 +473,7 @@ void keyPressed() {
   }  else if (keyCode == RIGHT) {
     ledLocXOffset = max(0, ledLocXOffset + 2);
   }  
-  println(keyCode);
+  //println(keyCode);
 }
 
 // scale a number by a percentage, from 0 to 100
@@ -554,6 +504,7 @@ double percentageFloat(int percent) {
   return (double)percent / 100.0;
 }
 
+// Prints the ledPhysLocs array to the output
 void printLedPhysLocs() {
   println("ledPhysLocs=");
   println("{");
