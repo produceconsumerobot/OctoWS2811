@@ -44,7 +44,7 @@ import java.lang.reflect.Array;
 //Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShape\\Processing\\movie2serial\\HorzLineTest01_01.mov");
 //Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShape\\Processing\\movie2serial\\LineTest01_01.mov");
 //Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Arduino\\OctoWS2811-master\\OctoWS2811-master\\examples\\VideoDisplay\\Processing\\movie2serial\\2015_11_25_05_53_30_2015_12_02_04_49_42_AIA_304-hq.mp4");
-Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShape\\Processing\\movie2serial\\039341505-hd-sun-surface-solar-flares-3d_H264_420.mov");
+Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShape\\Processing\\movie2serial\\SunTest01_320x240_h264.mov");
 //Movie myMovie = new Movie(this, ".\\20131111_191820.mp4");
 
 
@@ -101,20 +101,27 @@ boolean serialOutOn = true;
 boolean displayOn = true;
 boolean movieOn = true;
 
+float myFrameRate = 30.0;
+float mFrameRateCounter;
+int dFrameCounter = 0;
+int mFrameCounter = 0;
+
 void setup() {
   String[] list = Serial.list();
   delay(20);
   println("Serial Ports List:");
   println(list);
-  String[] serialPorts = {"COM22"};
+  String[] serialPorts = {"COM23"};
   // Allocate ledPhysLocs ports
   ledPhysLocs = new int[serialPorts.length][][][];
   for (int i=0; i<serialPorts.length; i++) {
     serialConfigure(serialPorts[i]);
   }
   
-  // Print the LED physical locations to output    
-  printLedPhysLocs();
+  // Print the LED physical locations to output  
+  if (errorCount == 0) {  
+    printLedPhysLocs();
+  }
   
   if (errorCount > 0) exit();
   for (int i=0; i < 256; i++) {
@@ -123,6 +130,7 @@ void setup() {
   size(10, 10);  // create the window
   frame.setResizable(true);
   myMovie.loop();  // start the movie :-)
+  mFrameRateCounter = millis();
 }
 
  
@@ -133,7 +141,9 @@ void movieEvent(Movie m) {
   
   ledImage = new PImage(m.width, m.height);
   ledImage.copy(m, 0, 0, m.width, m.height, 0, 0, m.width, m.height);
-  ledImage.resize(0,540);
+  if (ledImage.height > 540) {
+    ledImage.resize(0,540);
+  }
   
   if (ledImage.width > width || ledImage.height > height) {
     println("reset frame size: " + ledImage.width +","+ ledImage.height +","+ width +","+ height);
@@ -143,6 +153,7 @@ void movieEvent(Movie m) {
   
   //if (framerate == 0) framerate = m.getSourceFrameRate();
   framerate = 30.0; // TODO, how to read the frame rate???
+  //frameRate(30);
   
   // Copy the video frame to a PImage
   // ToDo: make ledImage a single PImage rather than array
@@ -169,7 +180,15 @@ void movieEvent(Movie m) {
       // send the raw data to the LEDs  :-)
       ledSerial[p].write(ledData); 
     }         
-  }    
+  }
+  
+  // Print frame rate information
+  float frate = 1000/(millis() - mFrameRateCounter);
+  if (frate < myFrameRate * 0.9) {
+    println(int(frate) + ", m, " + mFrameCounter);
+  }
+  mFrameRateCounter = millis(); 
+  mFrameCounter++; 
 }
 
 // Convert 
@@ -345,10 +364,17 @@ class Coordinate {
 
 // draw runs every time the screen is redrawn - show the movie...
 void draw() {
+  // Print frame rate information
+  if (frameRate < myFrameRate * 0.9) {
+    println(int(frameRate) + ", d, " + dFrameCounter);
+  }
+  dFrameCounter++;
+
   if (movieOn) {
     // show the original video
     image(ledImage, 0, 0);
   }
+  
   
   // ToDo: Handle case where first LED x,y is -1
   Coordinate locMin = new Coordinate(ledPhysLocs[0][0][0][0], ledPhysLocs[0][0][0][1]);
