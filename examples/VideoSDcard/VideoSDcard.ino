@@ -1,3 +1,5 @@
+
+
 /*  OctoWS2811 VideoSDcard.ino - Video on LEDs, played from SD Card
     http://www.pjrc.com/teensy/td_libs_OctoWS2811.html
     Copyright (c) 2014 Paul Stoffregen, PJRC.COM, LLC
@@ -53,13 +55,14 @@
 #include <OctoWS2811.h>
 #include <SPI.h>
 #include <SD.h>
-#include <Audio.h>
+//#include <SerialFlash.h>
+//#include <Audio.h>
 #include <Wire.h>
 
-#define LED_WIDTH    60   // number of LEDs horizontally
-#define LED_HEIGHT   32   // number of LEDs vertically (must be multiple of 8)
+#define LED_WIDTH    382   // number of LEDs horizontally
+#define LED_HEIGHT   8   // number of LEDs vertically (must be multiple of 8)
 
-#define FILENAME     "VIDEO.BIN"
+#define FILENAME     "382x8_30.BIN"
 
 const int ledsPerStrip = LED_WIDTH * LED_HEIGHT / 8;
 DMAMEM int displayMemory[ledsPerStrip*6];
@@ -70,13 +73,23 @@ bool playing = false;
 OctoWS2811 leds(ledsPerStrip, displayMemory, drawingMemory, WS2811_800kHz);
 File videofile;
 
-AudioPlayQueue     audio;
-AudioOutputAnalog  dac;
-AudioConnection    patchCord1(audio, dac);
+unsigned long vidLoopTime = millis();
+
+#define LOG_VERBOSE true
+
+//AudioPlayQueue     audio;
+//AudioOutputAnalog  dac;
+//AudioConnection    patchCord1(audio, dac);
 
 
 void setup() {
-  AudioMemory(40);
+  // Blink LED to show Teensy is working properly
+  pinMode(13, OUTPUT);
+  digitalWrite(13, HIGH);
+  delay(3000);
+  digitalWrite(13, LOW);
+  
+//  AudioMemory(40);
   //while (!Serial) ;
   delay(50);
   Serial.println("VideoSDcard");
@@ -147,13 +160,17 @@ void loop()
         unsigned int size = (header[1] | (header[2] << 8)) * 3;
         unsigned int usec = header[3] | (header[4] << 8);
         unsigned int readsize = size;
-	// Serial.printf("v: %u %u", size, usec);
+        if (LOG_VERBOSE) {
+	        Serial.printf("v: %u %u", size, usec);
+        }
         if (readsize > sizeof(drawingMemory)) {
           readsize = sizeof(drawingMemory);
         }
         if (sd_card_read(drawingMemory, readsize)) {
-          // Serial.printf(", us = %u", (unsigned int)elapsedSinceLastFrame);
-          // Serial.println();
+          if (LOG_VERBOSE) {
+             Serial.printf(", us = %u", (unsigned int)elapsedSinceLastFrame);
+             Serial.println();
+          }
           while (elapsedSinceLastFrame < usec) ; // wait
           elapsedSinceLastFrame -= usec;
           leds.show();
@@ -165,41 +182,50 @@ void loop()
           sd_card_skip(size - readsize);
         }
       } else if (header[0] == '%') {
+        /*
         // found a chunk of audio data
         unsigned int size = (header[1] | (header[2] << 8)) * 2;
-        // Serial.printf("a: %u", size);
-	// Serial.println();
-	while (size > 0) {
-	  unsigned int len = size;
-	  if (len > 256) len = 256;
-	  int16_t *p = audio.getBuffer();
-	  if (!sd_card_read(p, len)) {
-	    error("unable to read audio frame data");
-            return;
-	  }
-	  if (len < 256) {
-            for (int i=len; i < 256; i++) {
-              *((char *)p + i) = 0;  // fill rest of buffer with zero
-            }
-	  }
-          audio.playBuffer();
-	  size -= len;
-	}
+        if (LOG_VERBOSE) {
+          Serial.printf("a: %u", size);
+  	      Serial.println();
+        }
+      	while (size > 0) {
+      	  unsigned int len = size;
+      	  if (len > 256) len = 256;
+        	  int16_t *p = audio.getBuffer();
+      	  if (!sd_card_read(p, len)) {
+      	    error("unable to read audio frame data");
+                  return;
+      	  }
+      	  if (len < 256) {
+                  for (int i=len; i < 256; i++) {
+                    *((char *)p + i) = 0;  // fill rest of buffer with zero
+                  }
+      	  }
+                audio.playBuffer();
+      	  size -= len;
+      	}
+       */
       } else {
         error("unknown header");
         return;
       }
     } else {
+      vidLoopTime = millis();
       error("unable to read 5-byte header");
       return;
     }
   } else {
-    delay(2000);
+    //delay(2000);
     videofile = SD.open(FILENAME, FILE_READ);
     if (videofile) {
       Serial.println("File opened");
       playing = true;
       elapsedSinceLastFrame = 0;
+    }
+    if (LOG_VERBOSE) {
+      Serial.print("VidLoopDelay: ms = ");
+      Serial.println(millis() - vidLoopTime);
     }
   }
 }

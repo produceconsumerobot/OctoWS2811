@@ -39,14 +39,14 @@ import processing.video.*;
 import processing.serial.*;
 import java.io.*;
 
-int ledWidth =  60;          // size of LED panel
-int ledHeight = 32;
+int ledWidth =  382;          // size of LED panel
+int ledHeight = 8;
 boolean ledLayout = true;    // layout of rows, true = even is left->right
 
-double framerate = 23.98;    // You MUST set this to the movie's frame rate
+double framerate = 30.0;    // You MUST set this to the movie's frame rate
                              // Processing does not seem to have a way to detect it.
 
-Movie myMovie = new Movie(this, "/Users/paul/myvideo.mov");
+Movie myMovie = new Movie(this, "F:\\SunTest01_320x240_h264.mov");
 FileOutputStream myFile;     // edit output filename below...
 
 float gamma = 1.8;
@@ -62,7 +62,7 @@ void setup() {
     gammatable[i] = (int)(pow((float)i / 255.0, gamma) * 255.0 + 0.5);
   }
   try {
-    myFile = new FileOutputStream("/Users/paul/myvideo.bin");
+    myFile = new FileOutputStream("F:\\382x8_30.BIN");
   } catch (Exception e) {
     exit();
   }
