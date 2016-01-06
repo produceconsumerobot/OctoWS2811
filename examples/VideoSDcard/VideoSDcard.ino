@@ -73,9 +73,9 @@ bool playing = false;
 OctoWS2811 leds(ledsPerStrip, displayMemory, drawingMemory, WS2811_800kHz);
 File videofile;
 
-unsigned long vidLoopTime = millis();
+unsigned long vidLoopTime = millis(); // Tracks how long it takes to close and open the video
 
-#define LOG_VERBOSE true
+#define LOG_VERBOSE true // Log verbose information to Serial.print
 
 //AudioPlayQueue     audio;
 //AudioOutputAnalog  dac;
@@ -211,7 +211,6 @@ void loop()
         return;
       }
     } else {
-      vidLoopTime = millis();
       error("unable to read 5-byte header");
       return;
     }
@@ -224,6 +223,7 @@ void loop()
       elapsedSinceLastFrame = 0;
     }
     if (LOG_VERBOSE) {
+      // Print how long it took to close and open the video
       Serial.print("VidLoopDelay: ms = ");
       Serial.println(millis() - vidLoopTime);
     }
@@ -235,6 +235,7 @@ void error(const char *str)
 {
   Serial.print("error: ");
   Serial.println(str);
+  vidLoopTime = millis();
   videofile.close();
   playing = false;
 }
