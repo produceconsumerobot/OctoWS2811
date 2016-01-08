@@ -58,49 +58,27 @@
 
 #include <OctoWS2811.h>
 
-// The actual arrangement of the LEDs connected to this Teensy 3.0 board.
-// LED_HEIGHT *must* be a multiple of 8.  When 16, 24, 32 are used, each
-// strip spans 2, 3, 4 rows.  LED_LAYOUT indicates the direction the strips
-// are arranged.  If 0, each strip begins on the left for its first row,
-// then goes right to left for its second row, then left to right,
-// zig-zagging for each successive row.
-#define LED_WIDTH      60   // number of LEDs horizontally
-#define LED_HEIGHT     64   // number of LEDs vertically (must be multiple of 8)
-#define LED_LAYOUT     0    // 0 = even rows left->right, 1 = even rows right->left
-
-// The portion of the video image to show on this set of LEDs.  All 4 numbers
-// are percentages, from 0 to 100.  For a large LED installation with many
-// Teensy 3.0 boards driving groups of LEDs, these parameters allow you to
-// program each Teensy to tell the video application which portion of the
-// video it displays.  By reading these numbers, the video application can
-// automatically configure itself, regardless of which serial port COM number
-// or device names are assigned to each Teensy 3.0 by your operating system.
-#define VIDEO_XOFFSET  0
-#define VIDEO_YOFFSET  0       // display entire image
-#define VIDEO_WIDTH    100
-#define VIDEO_HEIGHT   100
-
 // ledPhysLocs array stores the physical location lookup for every LED in use.
 // Array indexes are:
 //   - LED strip index (Must have 8 LED strips)
 //   - LED index (All strips must have the same number of LED positions)
-//   - x,y coordinate. {-1, -1} is used as a placeholder to make all LED strips 
+//   - x,y coordinate. {0, 0} is used as a placeholder to make all LED strips 
 //      have the same length and fill empty strips.
 /*int8_t ledPhysLocs[8][8][2]  = 
   { // Strips
-    {{ 1, 0},{ 3, 0},{ 5, 0},{ 7, 0},{ 9, 0},{11, 0},{13, 0},{-1,-1}},
-    {{ 1, 2},{ 3, 2},{ 5, 2},{ 7, 2},{ 9, 2},{11, 2},{13, 2},{-1,-1}},
-    {{ 1, 4},{ 3, 4},{ 5, 4},{ 7, 4},{ 9, 4},{11, 4},{13, 4},{-1,-1}},
-    {{ 1, 6},{ 3, 6},{ 5, 6},{ 7, 6},{ 9, 6},{11, 6},{13, 6},{-1,-1}},
-    {{14, 1},{12, 1},{10, 1},{ 8, 1},{ 6, 1},{ 4, 1},{ 2, 1},{ 0, 1}},
-    {{14, 3},{12, 3},{10, 3},{ 8, 3},{ 6, 3},{ 4, 3},{ 2, 3},{ 0, 3}},
-    {{14, 5},{12, 5},{10, 5},{ 8, 5},{ 6, 5},{ 4, 5},{ 2, 5},{ 0, 5}},
-    {{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1}}
+    {{ 2, 1},{ 4, 1},{ 6, 1},{ 8, 1},{10, 1},{12, 1},{14, 1},{ 0, 0}},
+    {{ 2, 3},{ 4, 3},{ 6, 3},{ 8, 3},{10, 3},{12, 3},{14, 3},{ 0, 0}},
+    {{ 2, 5},{ 4, 5},{ 6, 5},{ 8, 5},{10, 5},{12, 5},{14, 5},{ 0, 0}},
+    {{ 2, 7},{ 4, 7},{ 6, 7},{ 8, 7},{10, 7},{12, 7},{14, 7},{ 0, 0}},
+    {{15, 2},{13, 2},{11, 2},{ 9, 2},{ 7, 2},{ 5, 2},{ 3, 2},{ 1, 2}},
+    {{15, 4},{13, 4},{11, 4},{ 9, 4},{ 7, 4},{ 5, 4},{ 3, 4},{ 1, 4}},
+    {{15, 6},{13, 6},{11, 6},{ 9, 6},{ 7, 6},{ 5, 6},{ 3, 6},{ 1, 6}},
+    {{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}}
   };
   */
   
-#include "led_sun_phys_locs_01.h"
-//#include "sean_travel_phys_locs_01.h"
+//#include "led_sun_phys_locs_01.h"
+#include "sean_travel_phys_locs_01.h"
 
 const int ledsPerStrip = sizeof(ledPhysLocs[0])/sizeof(ledPhysLocs[0][0]);
 

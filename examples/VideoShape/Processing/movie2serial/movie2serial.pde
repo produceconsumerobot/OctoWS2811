@@ -53,35 +53,29 @@ Movie myMovie = new Movie(this, "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2
 //   - Port index
 //   - LED strip index (Must have 8 LED strips)
 //   - LED index (All strips must have the same number of LED positions)
-//   - x,y coordinate. {-1, -1} is used as a placeholder to make all LED strips 
+//   - x,y coordinate. {0, 0} is used as a placeholder to make all LED strips 
 //      have the same length and fill empty strips.
-int[][][][] ledPhysLocs;
+// E.g.:
 /*= 
   { // Ports
     { // Strips
-      {{ 1, 0},{ 3, 0},{ 5, 0},{ 7, 0},{ 9, 0},{11, 0},{13, 0},{-1,-1}},
-      {{ 1, 2},{ 3, 2},{ 5, 2},{ 7, 2},{ 9, 2},{11, 2},{13, 2},{-1,-1}},
-      {{ 1, 4},{ 3, 4},{ 5, 4},{ 7, 4},{ 9, 4},{11, 4},{13, 4},{-1,-1}},
-      {{ 1, 6},{ 3, 6},{ 5, 6},{ 7, 6},{ 9, 6},{11, 6},{13, 6},{-1,-1}},
-      {{14, 1},{12, 1},{10, 1},{ 8, 1},{ 6, 1},{ 4, 1},{ 2, 1},{ 0, 1}},
-      {{14, 3},{12, 3},{10, 3},{ 8, 3},{ 6, 3},{ 4, 3},{ 2, 3},{ 0, 3}},
-      {{14, 5},{12, 5},{10, 5},{ 8, 5},{ 6, 5},{ 4, 5},{ 2, 5},{ 0, 5}},
-      {{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1}}
-    }
+    {{ 2, 1},{ 4, 1},{ 6, 1},{ 8, 1},{10, 1},{12, 1},{14, 1},{ 0, 0}},
+    {{ 2, 3},{ 4, 3},{ 6, 3},{ 8, 3},{10, 3},{12, 3},{14, 3},{ 0, 0}},
+    {{ 2, 5},{ 4, 5},{ 6, 5},{ 8, 5},{10, 5},{12, 5},{14, 5},{ 0, 0}},
+    {{ 2, 7},{ 4, 7},{ 6, 7},{ 8, 7},{10, 7},{12, 7},{14, 7},{ 0, 0}},
+    {{15, 2},{13, 2},{11, 2},{ 9, 2},{ 7, 2},{ 5, 2},{ 3, 2},{ 1, 2}},
+    {{15, 4},{13, 4},{11, 4},{ 9, 4},{ 7, 4},{ 5, 4},{ 3, 4},{ 1, 4}},
+    {{15, 6},{13, 6},{11, 6},{ 9, 6},{ 7, 6},{ 5, 6},{ 3, 6},{ 1, 6}},
+    {{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}}
+  }
   };
   */
-
-// Final install has the following number of leds/strip:
-// 3: 379
-// 7: 378
-// others: 382
-
+int[][][][] ledPhysLocs;
 
 float ledLocScaler = 5;
 int ledLocXOffset = 100;
 int ledLocYOffset = 5;
 int ledLocAveArea = 0;
-color[] drawColors = {color(255,0,0), color(0,255,0)};
 
 float gamma = 1.7;
 
@@ -89,8 +83,6 @@ int numPorts=0;  // the number of serial ports in use
 int maxPorts=24; // maximum number of serial ports
 
 Serial[] ledSerial = new Serial[maxPorts];     // each port's actual Serial port
-Rectangle[] ledArea = new Rectangle[maxPorts]; // the area of the movie each port gets, in % (0-100)
-boolean[] ledLayout = new boolean[maxPorts];   // layout of rows, true = even is left->right
 PImage ledImage = new PImage(0, 0);      // image sent to each port
 int[] gammatable = new int[256];
 int errorCount=0;
@@ -101,17 +93,17 @@ boolean serialOutOn = true;
 boolean displayOn = true;
 boolean movieOn = true;
 
-float myFrameRate = 30.0;
+float targetFrameRate = 30.0;
 float mFrameRateCounter;
-int dFrameCounter = 0;
 int mFrameCounter = 0;
+int dFrameCounter = 0;
 
 void setup() {
   String[] list = Serial.list();
   delay(20);
   println("Serial Ports List:");
-  println(list);
-  String[] serialPorts = {"COM23"};
+  println((Object[]) list);
+  String[] serialPorts = {"COM24"};
   // Allocate ledPhysLocs ports
   ledPhysLocs = new int[serialPorts.length][][][];
   for (int i=0; i<serialPorts.length; i++) {
@@ -152,7 +144,7 @@ void movieEvent(Movie m) {
   }
   
   //if (framerate == 0) framerate = m.getSourceFrameRate();
-  framerate = 30.0; // TODO, how to read the frame rate???
+  framerate = targetFrameRate; // TODO, how to read the frame rate???
   //frameRate(30);
   
   // Copy the video frame to a PImage
@@ -184,14 +176,14 @@ void movieEvent(Movie m) {
   
   // Print frame rate information
   float frate = 1000/(millis() - mFrameRateCounter);
-  if (frate < myFrameRate * 0.9) {
+  if (frate < targetFrameRate * 0.9) {
     println(int(frate) + ", m, " + mFrameCounter);
   }
   mFrameRateCounter = millis(); 
   mFrameCounter++; 
 }
 
-// Convert 
+// Grab data from video frame specified by ledPhysLocs
 void shape2data(PImage image, byte[] data, int port) {
   int offset = 3;
   int mask;
@@ -204,11 +196,11 @@ void shape2data(PImage image, byte[] data, int port) {
       
       // get position in image.pixels
       // pixel[s] = x + (y * w)
-      if (ledPhysLocs[port][s][l][0] < 0 || ledPhysLocs[port][s][l][1] < 0) {
+      if (ledPhysLocs[port][s][l][0] < 1 || ledPhysLocs[port][s][l][1] < 1) {
         pixel[s] = 0;
       } else {
-        int pixNum = int(ledPhysLocs[port][s][l][0]*ledLocScaler+ledLocXOffset + // x offset
-          (ledPhysLocs[port][s][l][1]*ledLocScaler+ledLocYOffset) * image.width);
+        int pixNum = int((ledPhysLocs[port][s][l][0]-1)*ledLocScaler+ledLocXOffset) + // x offset
+          int((ledPhysLocs[port][s][l][1]-1)*ledLocScaler+ledLocYOffset) * image.width;
         //println(pixNum + "," + image.width+ "," + image.height + "," + image.pixels.length);
         if (pixNum < image.pixels.length) {
           pixel[s] = image.pixels[pixNum];
@@ -365,7 +357,7 @@ class Coordinate {
 // draw runs every time the screen is redrawn - show the movie...
 void draw() {
   // Print frame rate information
-  if (frameRate < myFrameRate * 0.9) {
+  if (frameRate < targetFrameRate * 0.9) {
     println(int(frameRate) + ", d, " + dFrameCounter);
   }
   dFrameCounter++;
@@ -376,9 +368,9 @@ void draw() {
   }
   
   
-  // ToDo: Handle case where first LED x,y is -1
-  Coordinate locMin = new Coordinate(ledPhysLocs[0][0][0][0], ledPhysLocs[0][0][0][1]);
-  Coordinate locMax = new Coordinate(ledPhysLocs[0][0][0][0], ledPhysLocs[0][0][0][1]);
+  // Get a starting coordinate for calculating min/max
+  Coordinate locMin = new Coordinate(max(1, ledPhysLocs[0][0][0][0]), max(1, ledPhysLocs[0][0][0][1]));
+  Coordinate locMax = new Coordinate(max(1, ledPhysLocs[0][0][0][0]), max(1, ledPhysLocs[0][0][0][1]));
   
   // Draw locations of LED sampling from video
   for (int p=0; p<ledPhysLocs.length; p++) {
@@ -388,7 +380,7 @@ void draw() {
           noFill();
           rectMode(CENTER);
                     
-          if (ledPhysLocs[p][s][l][0] != -1 && ledPhysLocs[p][s][l][1] != -1) {
+          if (ledPhysLocs[p][s][l][0] > 0 && ledPhysLocs[p][s][l][1] > 0) {
             // Capture the min and max LED locations
             if (ledPhysLocs[p][s][l][0] < locMin.x) locMin.x = ledPhysLocs[p][s][l][0];
             if (ledPhysLocs[p][s][l][1] < locMin.y) locMin.y = ledPhysLocs[p][s][l][1];
@@ -397,13 +389,13 @@ void draw() {
             
             if (gridOn) {
               stroke(255,255,255);     
-              rect(ledPhysLocs[p][s][l][0]*ledLocScaler+ledLocXOffset, 
-                   ledPhysLocs[p][s][l][1]*ledLocScaler+ledLocYOffset, 
+              rect(int((ledPhysLocs[p][s][l][0]-1)*ledLocScaler+ledLocXOffset), 
+                   int((ledPhysLocs[p][s][l][1]-1)*ledLocScaler+ledLocYOffset), 
                    ledLocAveArea+2, ledLocAveArea+2);
             
               stroke(0,0,0);
-              rect(ledPhysLocs[p][s][l][0]*ledLocScaler+ledLocXOffset, 
-                   ledPhysLocs[p][s][l][1]*ledLocScaler+ledLocYOffset, 
+              rect(int((ledPhysLocs[p][s][l][0]-1)*ledLocScaler+ledLocXOffset), 
+                   int((ledPhysLocs[p][s][l][1]-1)*ledLocScaler+ledLocYOffset), 
                    ledLocAveArea+4, ledLocAveArea+4);
             }
           }
@@ -434,10 +426,10 @@ void draw() {
         for (int p=0; p<ledPhysLocs.length; p++) {
           for (int s=0; s<ledPhysLocs[p].length; s++) {
             for (int l=0; l<ledPhysLocs[p][s].length; l++) {
-              if (ledPhysLocs[p][s][l][0] != -1 && ledPhysLocs[p][s][l][1] != -1) {
+              if (ledPhysLocs[p][s][l][0] > 0 && ledPhysLocs[p][s][l][1] > 0) {
                 // Calculate the location sampled pixels
-                int pixNum = int(ledPhysLocs[p][s][l][0]*ledLocScaler+ledLocXOffset +
-                  (ledPhysLocs[p][s][l][1]*ledLocScaler+ledLocYOffset) * image.width);
+                int pixNum = int((ledPhysLocs[p][s][l][0]-1)*ledLocScaler+ledLocXOffset) +
+                  int((ledPhysLocs[p][s][l][1]-1)*ledLocScaler+ledLocYOffset) * image.width;
                 //println(pixNum + "," + image.width+ "," + image.height + "," + image.pixels.length);
                 //println(ledPhysLocs[p][s][l][0] + "," + ledPhysLocs[p][s][l][1] + ","
                 //  + pixNum + "," + image.width + "," + image.height + "," + image.pixels.length);
