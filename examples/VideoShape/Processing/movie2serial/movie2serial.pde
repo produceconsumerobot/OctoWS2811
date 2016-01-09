@@ -120,7 +120,7 @@ void setup() {
     gammatable[i] = (int)(pow((float)i / 255.0, gamma) * 255.0 + 0.5);
   }
   size(10, 10);  // create the window
-  frame.setResizable(true);
+  surface.setResizable(true);
   myMovie.loop();  // start the movie :-)
   mFrameRateCounter = millis();
 }
@@ -139,8 +139,8 @@ void movieEvent(Movie m) {
   
   if (ledImage.width > width || ledImage.height > height) {
     println("reset frame size: " + ledImage.width +","+ ledImage.height +","+ width +","+ height);
-    frame.setSize(ledImage.width*2, ledImage.height+40);
-    //frame.setResizable(false);
+    surface.setSize(ledImage.width*2, ledImage.height+40);
+    //surface.setResizable(false);
   }
   
   //if (framerate == 0) framerate = m.getSourceFrameRate();
