@@ -95,8 +95,8 @@ int[][][][] ledPhysLocs  = new int[][][][]
 };
 */
 
-String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\SunTest01_320x240_h264.mov";
-//String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\039341505-hd-sun-surface-solar-flares-3d_H264_420.mov";
+//String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\SunTest01_320x240_h264.mov";
+String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\039341505-hd-sun-surface-solar-flares-3d_H264_420.mov";
 
 String[] outFileNames = {"F:\\VIDEO_01.BIN"};
 
@@ -638,13 +638,13 @@ int serialConfigure(int port) {
     return errorCount;
   }
 
-  if (int(param[0]) != ledPhysLocs[port].length) {
+  if (int(param[1]) != ledPhysLocs[port].length) {
     println("Error: nStrips doesn't match for port " + portName);
     errorCount++;
     return errorCount;
   }  
   
-  if (int(param[1]) != ledPhysLocs[port][0].length) {
+  if (int(param[0]) != ledPhysLocs[port][0].length) {
     println("Error: nLedsPerStrip doesn't match for port " + portName);
     errorCount++;
     return errorCount;
@@ -1028,7 +1028,18 @@ void keyPressed() {
     println("Gamma=" + myParams.gamma);
     setupGammaTable(myParams.gamma);
   }
-  if (key == '+') {
+  if (key == 'F') {
+    myParams.targetFrameRate = myParams.targetFrameRate * 1.05;
+    println("targetFrameRate=" + myParams.targetFrameRate);
+    myMovie.frameRate(myParams.targetFrameRate);
+    frameRate(myParams.targetFrameRate);
+  }
+  if (key == 'f') {
+    myParams.targetFrameRate = max(1, myParams.targetFrameRate /1.05);
+    println("targetFrameRate=" + myParams.targetFrameRate);
+    myMovie.frameRate(myParams.targetFrameRate);
+    frameRate(myParams.targetFrameRate);
+  }  if (key == '+') {
     myParams.ledLocScaler = max(1, myParams.ledLocScaler *1.05);
     println("Scaler=" + myParams.ledLocScaler);
   } else if (key == '-') {
