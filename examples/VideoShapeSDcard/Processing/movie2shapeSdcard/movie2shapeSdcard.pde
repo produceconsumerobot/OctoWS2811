@@ -107,6 +107,7 @@ float ledLocScaler = 2.0;
 int ledLocXOffset = 0;
 int ledLocYOffset = 0;
 
+float hue = 0.0;
 float brightness = 0.0;
 float contrast = 1.0;
 int smoothing = 0;
@@ -162,6 +163,7 @@ void setup() {
   myParams.ledLocScaler = ledLocScaler;
   myParams.ledLocXOffset = ledLocXOffset;
   myParams.ledLocYOffset = ledLocYOffset;
+  myParams.hue = hue;
   myParams.brightness = brightness;
   myParams.contrast = contrast;
   myParams.smoothing = smoothing;
@@ -217,6 +219,7 @@ void movieEvent(Movie m) {
     ledImage.resize(0, myParams.maxVideoRes);
   }
   // Perform image adjustments
+  adjustHue(ledImage, myParams.hue);  
   adjustBrightness(ledImage, myParams.brightness);
   adjustContrast(ledImage, myParams.contrast);  
   if (myParams.smoothing > 0) {
@@ -657,11 +660,14 @@ void setupGammaTable(float gamma) {
   }
 }
 
+// adjustBrightness(PImage img, float value)
+// value range: -255 to 255
 void adjustBrightness(PImage img, float value) {
   if (value != 0) {
+    colorMode(RGB, 255);
     for (int x = 0; x < img.width; x++) {
       for (int y = 0; y < img.height; y++ ) {
-        int loc = x + y*img.width;
+        int loc = x + y*img.width;     
         float r,g,b;
         r = red (img.pixels[loc]);
         g = green (img.pixels[loc]);
@@ -674,13 +680,17 @@ void adjustBrightness(PImage img, float value) {
         b = constrain(b, 0, 255);
         color c = color(r, g, b);
         img.pixels[y*img.width + x] = c;
+        
       }
     }                     
   }
 }
 
+// adjustBrightness(PImage img, float value)
+// value range: 1.0 to 255
 void adjustContrast(PImage img, float value) {
   if (value != 1.0) {
+    colorMode(RGB, 255);
     for (int x = 0; x < img.width; x++) {
       for (int y = 0; y < img.height; y++ ) {
         int loc = x + y*img.width;
@@ -698,6 +708,23 @@ void adjustContrast(PImage img, float value) {
         img.pixels[y*img.width + x] = c;
       }
     }
+  }
+}
+
+// adjustBrightness(PImage img, float value)
+// value range: -255 to 255
+void adjustHue(PImage img, float value) {
+  if (value % 255 != 0) {
+    colorMode(HSB, 255);
+    for (int x = 0; x < img.width; x++) {
+      for (int y = 0; y < img.height; y++ ) {
+        int loc = x + y*img.width;
+        float h = hue(img.pixels[loc]);
+        h += value;
+        h = h % 255; 
+        img.pixels[y*img.width + x] = color(h, saturation(img.pixels[loc]), brightness(img.pixels[loc]));
+      }
+    }                     
   }
 }
 
@@ -751,6 +778,7 @@ class Params {
   public float ledLocScaler;
   public int ledLocXOffset;
   public int ledLocYOffset;
+  public float hue;
   public float brightness;
   public float contrast;
   public int smoothing;
@@ -981,6 +1009,14 @@ void keyPressed() {
   if (key == 'c') {
     myParams.contrast = max(0, myParams.contrast / 1.05);
     println("Contrast=" + myParams.contrast);
+  }
+  if (key == 'H') {
+    myParams.hue = min(255, myParams.hue + 1);
+    println("Hue=" + myParams.hue);
+  }
+  if (key == 'h') {
+    myParams.hue = max(-255, myParams.hue - 1);
+    println("Hue=" + myParams.hue);
   }
   if (key == 'G') {
     myParams.gamma = min(10, myParams.gamma + 0.05);
