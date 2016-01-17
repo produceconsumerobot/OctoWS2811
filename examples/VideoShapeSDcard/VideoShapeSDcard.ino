@@ -83,7 +83,7 @@ int playMode = SD_CARD_READ_MODE;
 #define LOG_ERROR     3
 #define LOG_VERBOSE   5 // Log verbose information to Serial.print
 
-int LOG_LEVEL = LOG_VERBOSE;
+int LOG_LEVEL = LOG_ERROR;
 
 // --------- END USER DEFINED VARIABLES ------------- //
 
@@ -123,7 +123,9 @@ void setup() {
   delay(50);
 
   // Setup the SD card
-  setupSDcheck();
+  SD.begin(3);
+  delay(50);
+  //setupSDcheck();
 
   if (playMode == SD_CARD_READ_MODE) {
     openSDread();
@@ -136,13 +138,18 @@ void setup() {
 void loop() {
   // Read from serial to determine which mode to 
   int startChar = Serial.read();
+  int lpCnt;
 
   switch (startChar) {
     case '^':
       playing = false;
       videofile.seek(0);
       videofile.close();
-      while(videofile) delay(10);
+      lpCnt = 0;
+      while(videofile && lpCnt < 100) {
+        delay(10);
+        lpCnt++;
+      }
       playMode = SERIAL_MODE;
       Serial.println("Entering SERIAL_MODE");
       break;
@@ -151,12 +158,14 @@ void loop() {
       // Until then: Manually reset the Teensy with the reset button.
       //playMode = SD_CARD_READ_MODE;
       //stopWithErrorMessage("Manually hit reset button to enter SD_CARD_READ_MODE");
-      Serial.println("Manually hit reset button to enter SD_CARD_READ_MODE");
+      //Serial.println("Manually hit reset button to enter SD_CARD_READ_MODE");
       videofile.close();
-      while(videofile) delay(10);
-      SD.begin(3);
+      lpCnt = 0;
+      while(videofile && lpCnt < 100) {
+        delay(10);
+        lpCnt++;
+      }
       openSDread();
-      videofile.seek(0);
       playMode = SD_CARD_READ_MODE;
       elapsedUsecSinceLastFrameSync = 0;
       elapsedSinceLastFrame = 0;
@@ -292,11 +301,10 @@ void loop() {
     // SD Card Mode reads video data from the SD card and writes
     // it to the OCTOWS8211.
     unsigned char header[5];
-  
-    if (playing && videofile) {
+    
+    if (playing && videofile && videofile.position() < videofile.size()) {
       if (LOG_LEVEL >= LOG_VERBOSE) {
-        //Serial.printf("Position = ");
-        //Serial.println(videofile.position());
+        Serial.printf("Position = %u / %u\n", videofile.position(), videofile.size());
       }
       if (sd_card_read(header, 5, 0)) {
           if (LOG_LEVEL >= LOG_VERBOSE)  {
@@ -320,6 +328,7 @@ void loop() {
             }
             while (elapsedSinceLastFrame < usec) ; // wait
             elapsedSinceLastFrame -= usec;
+            vidLoopTime = millis();
             leds.show();
           } else {
             error("unable to read video frame data");
@@ -374,10 +383,25 @@ void loop() {
     } else {
       //delay(2000);
       playing = false;
+      Serial.printf("Closing file\n");
       videofile.close();
-      while(videofile) delay(10);
+      lpCnt = 0;
+      while(videofile && lpCnt < 100) {
+        delay(10);
+        lpCnt++;
+      }
+      if (LOG_LEVEL >= LOG_VERBOSE)  {
+        Serial.printf("Close lpCnt = %i\n", lpCnt);
+      }
       videofile = SD.open(FILENAME, FILE_READ);
-      while(!videofile) delay(10);
+      lpCnt = 0;
+      while(!videofile && lpCnt < 100) {
+        delay(10);
+        lpCnt++;
+      }
+      if (LOG_LEVEL >= LOG_VERBOSE)  {
+        Serial.printf("Open lpCnt = %i\n", lpCnt);
+      }
       if (videofile) {
         Serial.println("File opened");
         sd_card_read(0, 0, 1);
@@ -394,7 +418,11 @@ void loop() {
     if (startChar == ']') {
       // Video file is finished writing!
       videofile.close();
-      while(videofile) delay(10);
+      lpCnt = 0;
+      while(videofile && lpCnt < 100) {
+        delay(10);
+        lpCnt++;
+      }
       Serial.println("Closing SD write");
       playMode = SERIAL_MODE;
     } else if (startChar == '*') {
@@ -408,11 +436,12 @@ void loop() {
       } else {
         count = Serial.readBytes((char *)drawingMemory, sizeof(drawingMemory));
         if (count != sizeof(drawingMemory)) {
-          Serial.println("Error: Wrong size write data");
+          Serial.printf("Error: Wrong size write data: %i, %i\n", count, sizeof(drawingMemory));
         } else {
           videofile.write(startChar);
           videofile.write(header, headerSize);
           videofile.write((char *)drawingMemory, sizeof(drawingMemory));
+          leds.show();
         }
       }
     }
@@ -483,22 +512,33 @@ void setupSDcheck() {
       sdBegun = true;
     } else {
       error("Could not access SD card");
-      playMode = SERIAL_MODE;
+      //playMode = SERIAL_MODE;
     }
   }
   delay(50);  
 }
 
 void openSDread() {
- setupSDcheck();
+ // ToDo: figure out why we have to call SD.begin again here.
+ SD.begin(3);
+ delay(50);
+ //setupSDcheck();
  
  if (sdBegun) {
     Serial.println("SD card ok");
     playing = false;
     videofile.close();
-    while(videofile) delay(10); 
+    int lpCnt = 0;
+    while(videofile && lpCnt < 100) {
+      delay(10);
+      lpCnt++;
+    }
     videofile = SD.open(FILENAME, FILE_READ);
-    while(!videofile) delay(10);
+    lpCnt = 0;
+    while(!videofile && lpCnt < 100) {
+      delay(10);
+      lpCnt++;
+    }
     if (!videofile) {
       error("Could not read " FILENAME);
       //stopWithErrorMessage("Could not read " FILENAME);
@@ -508,24 +548,41 @@ void openSDread() {
       Serial.println((char *) FILENAME);
       Serial.print("File size: ");
       Serial.println(videofile.size());
+      videofile.seek(0);
       sd_card_read(0, 0, 1);
       playing = true;
       elapsedSinceLastFrame = 0;
     }
-    delay(2000); 
   }
 }
 
 void openSDwrite() {
-  setupSDcheck();
+  // ToDo: figure out why we have to call SD.begin again here.
+  SD.begin(3);
+  delay(50);
+  //setupSDcheck();
   
   if (sdBegun) {
     Serial.println("SD card ok");
     playing = false;
     videofile.close();
     while(videofile) delay(10); 
+    Serial.println("Video file closed");
+
+    // Remove the old video file
+    if (SD.remove(FILENAME)) {
+      Serial.printf("File removed: %s\n", FILENAME);
+    } else {
+      Serial.printf("File not removed: %s\n", FILENAME);
+    }
+    
     videofile = SD.open(FILENAME, FILE_WRITE);
-    while(!videofile) delay(10);
+    int lpCnt = 0;
+    while(!videofile && lpCnt < 200) {
+      delay(10);
+      lpCnt++;
+      Serial.printf("lpCnt = %i\n", lpCnt);
+    }
     if (!videofile) {
       error("Could not write " FILENAME);
       //stopWithErrorMessage("Could not read " FILENAME);
@@ -547,10 +604,13 @@ void error(const char *str)
 {
   Serial.print("error: ");
   Serial.println(str);
-  vidLoopTime = millis();
   if (videofile) {
     videofile.close();
-    while(videofile) delay(10);
+    int lpCnt = 0;
+    while(videofile && lpCnt < 100) {
+      delay(10);
+      lpCnt++;
+    }
   }
   playing = false;
 }

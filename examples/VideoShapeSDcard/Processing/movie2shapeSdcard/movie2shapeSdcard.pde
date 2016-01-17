@@ -62,7 +62,7 @@ import java.lang.reflect.Field;
 //   }
 // };
 
-
+/*
 // LED Sun array
 int[][][][] ledPhysLocs  = new int[][][][]
 { // Ports
@@ -77,8 +77,8 @@ int[][][][] ledPhysLocs  = new int[][][][]
     {{84,64},{82,64},{80,64},{78,64},{76,64},{74,64},{72,64},{70,64},{68,64},{66,64},{64,64},{62,64},{60,64},{58,64},{56,64},{54,64},{52,64},{50,64},{48,64},{46,64},{44,64},{42,64},{40,64},{38,64},{36,64},{34,64},{32,64},{30,64},{28,64},{26,64},{24,64},{22,64},{20,64},{18,64},{16,64},{14,64},{12,64},{10,64},{ 8,64},{ 6,64},{ 8,66},{10,66},{12,66},{14,66},{16,66},{18,66},{20,66},{22,66},{24,66},{26,66},{28,66},{30,66},{32,66},{34,66},{36,66},{38,66},{40,66},{42,66},{44,66},{46,66},{48,66},{50,66},{52,66},{54,66},{56,66},{58,66},{60,66},{62,66},{64,66},{66,66},{68,66},{70,66},{72,66},{74,66},{76,66},{78,66},{80,66},{82,66},{82,68},{80,68},{78,68},{76,68},{74,68},{72,68},{70,68},{68,68},{66,68},{64,68},{62,68},{60,68},{58,68},{56,68},{54,68},{52,68},{50,68},{48,68},{46,68},{44,68},{42,68},{40,68},{38,68},{36,68},{34,68},{32,68},{30,68},{28,68},{26,68},{24,68},{22,68},{20,68},{18,68},{16,68},{14,68},{12,68},{10,68},{ 8,68},{10,70},{12,70},{14,70},{16,70},{18,70},{20,70},{22,70},{24,70},{26,70},{28,70},{30,70},{32,70},{34,70},{36,70},{38,70},{40,70},{42,70},{44,70},{46,70},{48,70},{50,70},{52,70},{54,70},{56,70},{58,70},{60,70},{62,70},{64,70},{66,70},{68,70},{70,70},{72,70},{74,70},{76,70},{78,70},{80,70},{78,72},{76,72},{74,72},{72,72},{70,72},{68,72},{66,72},{64,72},{62,72},{60,72},{58,72},{56,72},{54,72},{52,72},{50,72},{48,72},{46,72},{44,72},{42,72},{40,72},{38,72},{36,72},{34,72},{32,72},{30,72},{28,72},{26,72},{24,72},{22,72},{20,72},{18,72},{16,72},{14,72},{12,72},{12,74},{14,74},{16,74},{18,74},{20,74},{22,74},{24,74},{26,74},{28,74},{30,74},{32,74},{34,74},{36,74},{38,74},{40,74},{42,74},{44,74},{46,74},{48,74},{50,74},{52,74},{54,74},{56,74},{58,74},{60,74},{62,74},{64,74},{66,74},{68,74},{70,74},{72,74},{74,74},{76,74},{78,74},{76,76},{74,76},{72,76},{70,76},{68,76},{66,76},{64,76},{62,76},{60,76},{58,76},{56,76},{54,76},{52,76},{50,76},{48,76},{46,76},{44,76},{42,76},{40,76},{38,76},{36,76},{34,76},{32,76},{30,76},{28,76},{26,76},{24,76},{22,76},{20,76},{18,76},{16,76},{14,76},{16,78},{18,78},{20,78},{22,78},{24,78},{26,78},{28,78},{30,78},{32,78},{34,78},{36,78},{38,78},{40,78},{42,78},{44,78},{46,78},{48,78},{50,78},{52,78},{54,78},{56,78},{58,78},{60,78},{62,78},{64,78},{66,78},{68,78},{70,78},{72,78},{74,78},{70,80},{68,80},{66,80},{64,80},{62,80},{60,80},{58,80},{56,80},{54,80},{52,80},{50,80},{48,80},{46,80},{44,80},{42,80},{40,80},{38,80},{36,80},{34,80},{32,80},{30,80},{28,80},{26,80},{24,80},{22,80},{20,80},{22,82},{24,82},{26,82},{28,82},{30,82},{32,82},{34,82},{36,82},{38,82},{40,82},{42,82},{44,82},{46,82},{48,82},{50,82},{52,82},{54,82},{56,82},{58,82},{60,82},{62,82},{64,82},{66,82},{68,82},{64,84},{62,84},{60,84},{58,84},{56,84},{54,84},{52,84},{50,84},{48,84},{46,84},{44,84},{42,84},{40,84},{38,84},{36,84},{34,84},{32,84},{30,84},{28,84},{26,84},{30,86},{32,86},{34,86},{36,86},{38,86},{40,86},{42,86},{44,86},{46,86},{48,86},{50,86},{52,86},{54,86},{56,86},{58,86},{60,86},{54,88},{52,88},{50,88},{48,88},{46,88},{44,88},{42,88},{40,88},{38,88},{36,88},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}}
   }
 };
+*/
 
-/*
 // Sean's travel LED array
 int[][][][] ledPhysLocs  = new int[][][][]
 { // Ports
@@ -93,14 +93,14 @@ int[][][][] ledPhysLocs  = new int[][][][]
     {{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}}
   }
 };
-*/
+
 
 //String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\SunTest01_320x240_h264.mov";
 String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\039341505-hd-sun-surface-solar-flares-3d_H264_420.mov";
 
 String[] outFileNames = {"F:\\VIDEO_01.BIN"};
-
-String[] serialPorts = {"COM24"}; 
+//String[] outFileNames = {"\\SCH-I545\\Card\\VIDEO_01.BIN"};
+String[] serialPorts = {"COM26"}; 
 
 
 float ledLocScaler = 2.0;
@@ -133,6 +133,7 @@ PImage ledImage = new PImage(10, 10);            // image sent to each port
 float mFrameRateCounter;
 int mFrameCounter = 0;
 int dFrameCounter = 0;
+float mFrameRate = targetFrameRate;
 
 long elapsed_picoseconds=0L;
 long elapsed_microseconds=0L;
@@ -148,6 +149,7 @@ boolean serialOutOn = false;
 boolean sampledValuesOn = true;
 boolean movieOn = true;
 boolean sdWriteOn = false;
+boolean serialSdWriteOn = false;
 
 int LOG_ERROR = 3;
 int LOG_VERBOSE = 5;
@@ -195,6 +197,8 @@ void setup() {
   if (sdWriteOn) {
     // Setup SD card write
     setupSdWrite();
+    elapsed_picoseconds = 0L;
+    elapsed_microseconds = 0L;
     myMovie.play();  // start the movie :-)
   } else {
     myMovie.loop();  // start the movie :-)
@@ -290,13 +294,50 @@ void movieEvent(Movie m) {
         exit();
       }
     }
+    if (myMovie.time() >= myMovie.duration()) {
+      println("Movie writing complete!");
+      myMovie.stop();
+      isPlaying = false;
+      closeSdWrite();
+    } 
+  }
+  
+  if (serialSdWriteOn) {
+    elapsed_picoseconds += picoseconds_per_frame;
+    int usec = (int)((elapsed_picoseconds / 1000000L) - elapsed_microseconds);
+    elapsed_microseconds += (long)usec;
+    if (LOG_LEVEL >= LOG_VERBOSE)  {
+      println("usec = " + usec);
+    }
+    
+    // convert the LED image to raw data
+    for (int p=0; p < ledPhysLocs.length; p++) {  
+      int offset = 5;
+      byte[] ledData = new byte[(ledPhysLocs[p].length * ledPhysLocs[p][0].length * 3) + offset];
+      shape2data(ledImage, ledData, p, offset);
+      ledData[0] = '*';  // first Teensy is the frame sync master
+      
+      ledData[1] = (byte)(ledPhysLocs[p].length * ledPhysLocs[p][0].length);
+      ledData[2] = (byte)((ledPhysLocs[p].length * ledPhysLocs[p][0].length) >> 8);
+      ledData[3] = (byte)(usec);   // request the frame sync pulse
+      ledData[4] = (byte)(usec >> 8); // at 75% of the frame time
+
+      // send the raw data to the LEDs  :-)
+      try {  
+        ledSerial[p].write(ledData); 
+      } catch (Exception e) { 
+        println("Error: serial write failed");
+        e.printStackTrace();
+        exit();
+      } 
+    }
   }
     
   // Print frame rate information
-  float frate = 1000/(millis() - mFrameRateCounter);
-  if (frate < myParams.targetFrameRate * 0.9) {
+  mFrameRate = 1000/(millis() - mFrameRateCounter);
+  if (mFrameRate < myParams.targetFrameRate * 0.9) {
     if (LOG_LEVEL >= LOG_VERBOSE) {
-      println("frate: " + int(frate) + ", m, " + mFrameCounter);
+      println("frate: " + int(mFrameRate) + ", m, " + mFrameCounter);
     }
   }
   mFrameRateCounter = millis(); 
@@ -471,11 +512,36 @@ void draw() {
   
   if (sdWriteOn) {
     if (myMovie.time() >= myMovie.duration()) {
-      println("Movie writing complete!");
+      println("Movie SD writing complete!");
       myMovie.stop();
       isPlaying = false;
       closeSdWrite();
     } 
+  }
+  
+  if (serialSdWriteOn) {
+    //if (myMovie.time() >= 10) {
+    if (myMovie.time() >= myMovie.duration()) {
+      println("Movie serial SD writing complete!");
+      myMovie.stop();
+      isPlaying = false;
+      serialSdWriteOn = false;
+      for (int p=0; p < ledPhysLocs.length; p++) {
+        try {  
+          ledSerial[p].write(']'); 
+          String line = "";
+          while (line != null) {
+            print(line);
+            delay(100);
+            line = ledSerial[p].readStringUntil(10);
+          }
+        } catch (Exception e) { 
+          println("Error: serial write failed");
+          e.printStackTrace();
+          exit();
+        }
+      }
+    }
   }
 }
 
@@ -489,7 +555,7 @@ void setupSdWrite() {
   for (int i=0; i<outFileNames.length; i++) {
     try {
       println("Writing video file: " + outFileNames[i]);
-      //println("Estimated duration: " + myMovie.duration());
+      //println("Estimated write time: " + myMovie.duration());
       outFiles[i] = new FileOutputStream(outFileNames[i]);
     } catch (Exception e) {
       println("Error: " + outFileNames[i] + " file open failed");
@@ -552,7 +618,7 @@ void printLedPhysLocs() {
 }  
 
 // Setup all serial ports
-void setupSerialOut() {
+boolean setupSerialOut() {
   // Setup Serial Ports
   if (ledPhysLocs.length != serialPorts.length) {
     println("Error: ledPhysLocs.length != serialPorts.length");
@@ -569,9 +635,10 @@ void setupSerialOut() {
   // If any serial ports fail, turn off serial out
   // ToDo: Make each port toggle independently?
   if (errorCount == 0) { 
-    serialOutOn = true;
+    return true;
   } else {
     closeSerialOut();
+    return false;
   }
 }
 
@@ -588,6 +655,7 @@ void closeSerialOut() {
       //exit();
     }
   }
+  numPorts = 0;
 }
 
 // ask a Teensy board for its LED configuration, and set up the info for it.
@@ -599,7 +667,7 @@ int serialConfigure(int port) {
   numPorts++;
   
   if (numPorts >= maxPorts) {
-    println("too many serial ports, please increase maxPorts");
+    println("too many serial ports, please increase maxPorts: ");
     errorCount++;
     return errorCount;
   }
@@ -607,10 +675,11 @@ int serialConfigure(int port) {
     ledSerial[port] = new Serial(this, portName);
     if (ledSerial[port] == null) throw new NullPointerException();
     // Clear the serial buffer
-    String line = "not null";
+    String line = "";
     while (line != null) {
-      delay(20);
+      delay(100);
       line = ledSerial[port].readStringUntil(10);
+      print(line);
     }
     // Switch Teensy to SERIAL_MODE
     ledSerial[port].write('^');
@@ -619,6 +688,7 @@ int serialConfigure(int port) {
     ledSerial[port].write('?');
   } catch (Throwable e) {
     println("Serial port " + portName + " does not exist or is non-functional");
+    e.printStackTrace();
     errorCount++;
     return errorCount;
   }
@@ -881,7 +951,7 @@ void mousePressed() {
     isPlaying = false;
   } else {
     try {
-      if (sdWriteOn) {
+      if (sdWriteOn || serialSdWriteOn) {
         myMovie.play();
       } else {
         myMovie.loop();
@@ -896,11 +966,83 @@ void mousePressed() {
 void keyReleased() {
   if (key == 'o') {
     if (!serialOutOn) {
-      setupSerialOut();
+      closeSerialOut();
+      if (setupSerialOut()) serialOutOn = true;
     } else {
       closeSerialOut();
     }
     println("serialOutOn=" + serialOutOn);
+  } else if (key == '!') {
+    if (!serialSdWriteOn) {            
+      if (!serialOutOn) {
+        // Setup serial if necessary
+        // If serial doesn't work don't continue
+        if (!setupSerialOut()) return;
+      }
+      myMovie.stop();
+      for (int p=0; p < ledPhysLocs.length; p++) {
+        try {  
+          print("serialPort[" + p + "]: \n");
+          ledSerial[p].write('!'); 
+          String line = "";
+          int tries = 0;
+          while (tries < 500) {
+            if (line != null) {
+              print(line);
+              // Check for an error message
+              if (match(line, "error:") != null) {
+                println("Error detected");
+                serialSdWriteOn = false;
+                return;
+              } else if (match(line, "File opened:") != null) {
+                
+                serialOutOn = false;
+                serialSdWriteOn = true;
+                break;
+              }
+            }
+            delay(20); // Wait for all messages to come through
+            line = ledSerial[p].readStringUntil(10);
+            tries++;
+          }
+        } catch (Exception e) { 
+          println("Error: serial write failed");
+          e.printStackTrace();
+          exit();
+        }
+      }
+      if (serialSdWriteOn) {
+        elapsed_picoseconds = 0L;
+        elapsed_microseconds = 0L;
+        myMovie.play();
+        println("Estimated write time: " + myMovie.duration() 
+          * targetFrameRate/mFrameRate + " seconds");
+      }
+    } else {
+      // Stop the serial SD write
+      println("Stopping movie serial SD writing!");
+      myMovie.stop();
+      isPlaying = false;
+      serialSdWriteOn = false;
+      for (int p=0; p < ledPhysLocs.length; p++) {
+        try {  
+          ledSerial[p].write(']'); 
+          String line = "";
+          while (line != null) {
+            print(line);
+            delay(100);
+            line = ledSerial[p].readStringUntil(10);
+          }
+        } catch (Exception e) { 
+          println("Error: serial write failed");
+          e.printStackTrace();
+          exit();
+        }
+      }
+      myMovie.loop();
+      isPlaying = true;
+    }
+    println("serialSdWriteOn=" + serialSdWriteOn);
   } else if (key == 'm') {
     // Toggle movie display
     movieOn = !movieOn;
@@ -922,8 +1064,11 @@ void keyReleased() {
       // Restart video from beginning and play once
       //myMovie.stop();
       setupSdWrite();
+      elapsed_picoseconds = 0L;
+      elapsed_microseconds = 0L;
       myMovie.play();
-      println("Estimated duration: " + myMovie.duration() + " seconds");
+      println("Estimated write time: " + myMovie.duration() 
+          * targetFrameRate/mFrameRate + " seconds");
     } else {
       closeSdWrite();
       // Turn on video looping
@@ -944,43 +1089,26 @@ void keyReleased() {
     println("Saving Parameters: " + myParams.paramFileName);
     println(myParams.toString());
     myParams.save();
-  }
-  /*else if (key == '^') {
-    // Send the Teensies into SERIAL_MODE
-    println("Sending Teensies into SERIAL_MODE");
-    for (int i=0; i<serialPorts.length; i++) {
-      if (ledSerial[i] != null) {
-        ledSerial[i].write(key);
-        delay(50);
-        String line = ledSerial[i].readStringUntil(10);
-        if (line == null) {
-          println("Serial port " + serialPorts[i] + " is not responding.");
-        } else {
-          println(serialPorts[i] + ": " + line);
-        }
-      }
-    }
-  } 
-  */
-  /*else if (key == '&') {
+  } else if (key == '&') {
     serialOutOn = false;
     delay(50);
     // Send the Teensies into SD_CARD_MODE
     println("Sending Teensies into SD_CARD_MODE");
-    for (int i=0; i<serialPorts.length; i++) {
-      if (ledSerial[i] != null) {
-        ledSerial[i].write(key);
-        delay(50);
-        String line = ledSerial[i].readStringUntil(10);
-        if (line == null) {
-          println("Serial port " + serialPorts[i] + " is not responding.");
-        } else {
-          println(serialPorts[i] + ": " + line);
+    for (int p=0; p<serialPorts.length; p++) {
+      if (ledSerial[p] != null) {
+        ledSerial[p].write(key);
+        print("serialPort[" + p + "]: \n");
+        String line = "";
+        while (line != null) {
+          print(line);
+          delay(200);
+          line = ledSerial[p].readStringUntil(10);
         }
       }
     }
-    exit();
-  }*/
+    //closeSerialOut();
+    //exit();
+  }
 }
 
 void keyPressed() {
@@ -1031,14 +1159,17 @@ void keyPressed() {
   if (key == 'F') {
     myParams.targetFrameRate = myParams.targetFrameRate * 1.05;
     println("targetFrameRate=" + myParams.targetFrameRate);
+    picoseconds_per_frame = (long)(1e12 / myParams.targetFrameRate + 0.5);
     myMovie.frameRate(myParams.targetFrameRate);
-    frameRate(myParams.targetFrameRate);
+    //frameRate(myParams.targetFrameRate);
   }
   if (key == 'f') {
-    myParams.targetFrameRate = max(1, myParams.targetFrameRate /1.05);
+    // Frame rates lower than 15.5Hz will overflow uint usec on Teensy
+    myParams.targetFrameRate = max(15.5, myParams.targetFrameRate /1.05);
     println("targetFrameRate=" + myParams.targetFrameRate);
+    picoseconds_per_frame = (long)(1e12 / myParams.targetFrameRate + 0.5);
     myMovie.frameRate(myParams.targetFrameRate);
-    frameRate(myParams.targetFrameRate);
+    //frameRate(myParams.targetFrameRate);
   }  if (key == '+') {
     myParams.ledLocScaler = max(1, myParams.ledLocScaler *1.05);
     println("Scaler=" + myParams.ledLocScaler);
