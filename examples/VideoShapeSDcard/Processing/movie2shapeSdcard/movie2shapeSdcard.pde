@@ -965,11 +965,16 @@ void mousePressed() {
 
 void keyReleased() {
   if (key == '^') {
-    if (!serialOutOn) {
-      closeSerialOut();
-      if (setupSerialOut()) serialOutOn = true;
+    if (!serialSdWriteOn) {
+      // Only start serialOut if not in serialSdWriteOn mode
+      if (!serialOutOn) {
+        closeSerialOut();
+        if (setupSerialOut()) serialOutOn = true;
+      } else {
+        closeSerialOut();
+      }
     } else {
-      closeSerialOut();
+      println("Can't enable serialOutOn when serialSdWriteOn");
     }
     println("serialOutOn=" + serialOutOn);
   } else if (key == '!') {
@@ -1017,7 +1022,7 @@ void keyReleased() {
         myMovie.play();
         println("Estimated write time: " + myMovie.duration() 
           * targetFrameRate/mFrameRate + " seconds");
-      }
+      } 
     } else {
       // Stop the serial SD write
       println("Stopping movie serial SD writing!");

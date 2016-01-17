@@ -524,35 +524,33 @@ void openSDread() {
  delay(50);
  //setupSDcheck();
  
- if (sdBegun) {
-    Serial.println("SD card ok");
-    playing = false;
-    videofile.close();
-    int lpCnt = 0;
-    while(videofile && lpCnt < 100) {
-      delay(10);
-      lpCnt++;
-    }
-    videofile = SD.open(FILENAME, FILE_READ);
-    lpCnt = 0;
-    while(!videofile && lpCnt < 100) {
-      delay(10);
-      lpCnt++;
-    }
-    if (!videofile) {
-      error("Could not read " FILENAME);
-      //stopWithErrorMessage("Could not read " FILENAME);
-      //playMode = SERIAL_MODE;
-    } else {
-      Serial.print("File opened: ");
-      Serial.println((char *) FILENAME);
-      Serial.print("File size: ");
-      Serial.println(videofile.size());
-      videofile.seek(0);
-      sd_card_read(0, 0, 1);
-      playing = true;
-      elapsedSinceLastFrame = 0;
-    }
+  Serial.println("SD card ok");
+  playing = false;
+  videofile.close();
+  int lpCnt = 0;
+  while(videofile && lpCnt < 100) {
+    delay(10);
+    lpCnt++;
+  }
+  videofile = SD.open(FILENAME, FILE_READ);
+  lpCnt = 0;
+  while(!videofile && lpCnt < 100) {
+    delay(10);
+    lpCnt++;
+  }
+  if (!videofile) {
+    error("Could not read " FILENAME);
+    //stopWithErrorMessage("Could not read " FILENAME);
+    //playMode = SERIAL_MODE;
+  } else {
+    Serial.print("File opened: ");
+    Serial.println((char *) FILENAME);
+    Serial.print("File size: ");
+    Serial.println(videofile.size());
+    videofile.seek(0);
+    sd_card_read(0, 0, 1);
+    playing = true;
+    elapsedSinceLastFrame = 0;
   }
 }
 
@@ -562,39 +560,37 @@ void openSDwrite() {
   delay(50);
   //setupSDcheck();
   
-  if (sdBegun) {
-    Serial.println("SD card ok");
-    playing = false;
-    videofile.close();
-    while(videofile) delay(10); 
-    Serial.println("Video file closed");
+  Serial.println("SD card ok");
+  playing = false;
+  videofile.close();
+  while(videofile) delay(10); 
+  Serial.println("Video file closed");
 
-    // Remove the old video file
-    if (SD.remove(FILENAME)) {
-      Serial.printf("File removed: %s\n", FILENAME);
-    } else {
-      Serial.printf("File not removed: %s\n", FILENAME);
-    }
-    
-    videofile = SD.open(FILENAME, FILE_WRITE);
-    int lpCnt = 0;
-    while(!videofile && lpCnt < 200) {
-      delay(10);
-      lpCnt++;
-      Serial.printf("lpCnt = %i\n", lpCnt);
-    }
-    if (!videofile) {
-      error("Could not write " FILENAME);
-      //stopWithErrorMessage("Could not read " FILENAME);
-      //playMode = SERIAL_MODE;
-    } else {
-      Serial.print("File opened: ");
-      Serial.println((char *) FILENAME);
-      Serial.print("File size: ");
-      Serial.println(videofile.size());
-    }
-    delay(50); 
+  // Remove the old video file
+  if (SD.remove(FILENAME)) {
+    Serial.printf("File removed: %s\n", FILENAME);
+  } else {
+    Serial.printf("File not removed: %s\n", FILENAME);
   }
+  
+  videofile = SD.open(FILENAME, FILE_WRITE);
+  int lpCnt = 0;
+  while(!videofile && lpCnt < 200) {
+    delay(10);
+    lpCnt++;
+    Serial.printf("lpCnt = %i\n", lpCnt);
+  }
+  if (!videofile) {
+    error("Could not write " FILENAME);
+    //stopWithErrorMessage("Could not read " FILENAME);
+    //playMode = SERIAL_MODE;
+  } else {
+    Serial.print("File opened: ");
+    Serial.println((char *) FILENAME);
+    Serial.print("File size: ");
+    Serial.println(videofile.size());
+  }
+  delay(50); 
 }
 
 
