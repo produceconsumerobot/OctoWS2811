@@ -964,7 +964,7 @@ void mousePressed() {
 }
 
 void keyReleased() {
-  if (key == 'o') {
+  if (key == '^') {
     if (!serialOutOn) {
       closeSerialOut();
       if (setupSerialOut()) serialOutOn = true;
