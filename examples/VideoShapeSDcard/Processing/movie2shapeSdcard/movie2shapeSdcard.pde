@@ -96,7 +96,8 @@ int[][][][] ledPhysLocs  = new int[][][][]
 
 
 //String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\SunTest01_320x240_h264.mov";
-String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\039341505-hd-sun-surface-solar-flares-3d_H264_420.mov";
+//String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\039341505-hd-sun-surface-solar-flares-3d_H264_420.mov";
+String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\output8.mov";
 
 String[] outFileNames = {"F:\\VIDEO_01.BIN"};
 //String[] outFileNames = {"\\SCH-I545\\Card\\VIDEO_01.BIN"};
@@ -227,6 +228,16 @@ void movieEvent(Movie m) {
   adjustBrightness(ledImage, myParams.brightness);
   adjustContrast(ledImage, myParams.contrast);  
   if (myParams.smoothing > 0) {
+    //ledImage.filter(BLUR, myParams.smoothing);
+    
+    // Perform smoothing that changes over the course of the movie
+    int nWaves = 4; // Number of cosine waves in movie duration
+    float minSmoothing = 0; // mininum amount of smoothing
+    float maxSmoothing = 5; // Peak smoothing
+    float smoothing = cos(m.time() / m.duration() * TWO_PI * nWaves);
+    // Flip and map cosine output to min/max smoothing 
+    smoothing = map(smoothing, 1, -1, minSmoothing, maxSmoothing);
+    //(smoothing - 1.0) / -2.0 * maxSmoothing;
     ledImage.filter(BLUR, myParams.smoothing);
   }
   ledImageLocked = false; // unlock image
