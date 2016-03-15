@@ -69,8 +69,8 @@
 // are arranged.  If 0, each strip begins on the left for its first row,
 // then goes right to left for its second row, then left to right,
 // zig-zagging for each successive row.
-#define LED_WIDTH      8   // number of LEDs horizontally
-#define LED_HEIGHT     8   // number of LEDs vertically (must be multiple of 8)
+#define LED_WIDTH      382   // number of LEDs horizontally
+#define LED_HEIGHT     8     // number of LEDs vertically (must be multiple of 8)
 
 #define FILENAME     "VIDEO_01.BIN"
 
@@ -381,8 +381,9 @@ void loop() {
         return;
       }
     } else {
-      //delay(2000);
       playing = false;
+      digitalWrite(13, LOW); // Blink LED to know when we're looping
+      //delay(2000);
       Serial.printf("Closing file\n");
       videofile.close();
       lpCnt = 0;
@@ -406,6 +407,7 @@ void loop() {
         Serial.println("File opened");
         sd_card_read(0, 0, 1);
         playing = true;
+        digitalWrite(13, HIGH); // Blink LED to know when we're looping
         elapsedSinceLastFrame = 0;
       }
       if (LOG_LEVEL >= LOG_VERBOSE)  {

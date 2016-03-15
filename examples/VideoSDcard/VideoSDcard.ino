@@ -62,7 +62,7 @@
 #define LED_WIDTH    382   // number of LEDs horizontally
 #define LED_HEIGHT   8   // number of LEDs vertically (must be multiple of 8)
 
-#define FILENAME     "382x8_30.BIN"
+#define FILENAME     "VIDEO_01.BIN"
 
 const int ledsPerStrip = LED_WIDTH * LED_HEIGHT / 8;
 DMAMEM int displayMemory[ledsPerStrip*6];

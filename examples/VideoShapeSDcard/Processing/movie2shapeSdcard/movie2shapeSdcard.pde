@@ -62,7 +62,7 @@ import java.lang.reflect.Field;
 //   }
 // };
 
-/*
+
 // LED Sun array
 int[][][][] ledPhysLocs  = new int[][][][]
 { // Ports
@@ -77,8 +77,8 @@ int[][][][] ledPhysLocs  = new int[][][][]
     {{84,64},{82,64},{80,64},{78,64},{76,64},{74,64},{72,64},{70,64},{68,64},{66,64},{64,64},{62,64},{60,64},{58,64},{56,64},{54,64},{52,64},{50,64},{48,64},{46,64},{44,64},{42,64},{40,64},{38,64},{36,64},{34,64},{32,64},{30,64},{28,64},{26,64},{24,64},{22,64},{20,64},{18,64},{16,64},{14,64},{12,64},{10,64},{ 8,64},{ 6,64},{ 8,66},{10,66},{12,66},{14,66},{16,66},{18,66},{20,66},{22,66},{24,66},{26,66},{28,66},{30,66},{32,66},{34,66},{36,66},{38,66},{40,66},{42,66},{44,66},{46,66},{48,66},{50,66},{52,66},{54,66},{56,66},{58,66},{60,66},{62,66},{64,66},{66,66},{68,66},{70,66},{72,66},{74,66},{76,66},{78,66},{80,66},{82,66},{82,68},{80,68},{78,68},{76,68},{74,68},{72,68},{70,68},{68,68},{66,68},{64,68},{62,68},{60,68},{58,68},{56,68},{54,68},{52,68},{50,68},{48,68},{46,68},{44,68},{42,68},{40,68},{38,68},{36,68},{34,68},{32,68},{30,68},{28,68},{26,68},{24,68},{22,68},{20,68},{18,68},{16,68},{14,68},{12,68},{10,68},{ 8,68},{10,70},{12,70},{14,70},{16,70},{18,70},{20,70},{22,70},{24,70},{26,70},{28,70},{30,70},{32,70},{34,70},{36,70},{38,70},{40,70},{42,70},{44,70},{46,70},{48,70},{50,70},{52,70},{54,70},{56,70},{58,70},{60,70},{62,70},{64,70},{66,70},{68,70},{70,70},{72,70},{74,70},{76,70},{78,70},{80,70},{78,72},{76,72},{74,72},{72,72},{70,72},{68,72},{66,72},{64,72},{62,72},{60,72},{58,72},{56,72},{54,72},{52,72},{50,72},{48,72},{46,72},{44,72},{42,72},{40,72},{38,72},{36,72},{34,72},{32,72},{30,72},{28,72},{26,72},{24,72},{22,72},{20,72},{18,72},{16,72},{14,72},{12,72},{12,74},{14,74},{16,74},{18,74},{20,74},{22,74},{24,74},{26,74},{28,74},{30,74},{32,74},{34,74},{36,74},{38,74},{40,74},{42,74},{44,74},{46,74},{48,74},{50,74},{52,74},{54,74},{56,74},{58,74},{60,74},{62,74},{64,74},{66,74},{68,74},{70,74},{72,74},{74,74},{76,74},{78,74},{76,76},{74,76},{72,76},{70,76},{68,76},{66,76},{64,76},{62,76},{60,76},{58,76},{56,76},{54,76},{52,76},{50,76},{48,76},{46,76},{44,76},{42,76},{40,76},{38,76},{36,76},{34,76},{32,76},{30,76},{28,76},{26,76},{24,76},{22,76},{20,76},{18,76},{16,76},{14,76},{16,78},{18,78},{20,78},{22,78},{24,78},{26,78},{28,78},{30,78},{32,78},{34,78},{36,78},{38,78},{40,78},{42,78},{44,78},{46,78},{48,78},{50,78},{52,78},{54,78},{56,78},{58,78},{60,78},{62,78},{64,78},{66,78},{68,78},{70,78},{72,78},{74,78},{70,80},{68,80},{66,80},{64,80},{62,80},{60,80},{58,80},{56,80},{54,80},{52,80},{50,80},{48,80},{46,80},{44,80},{42,80},{40,80},{38,80},{36,80},{34,80},{32,80},{30,80},{28,80},{26,80},{24,80},{22,80},{20,80},{22,82},{24,82},{26,82},{28,82},{30,82},{32,82},{34,82},{36,82},{38,82},{40,82},{42,82},{44,82},{46,82},{48,82},{50,82},{52,82},{54,82},{56,82},{58,82},{60,82},{62,82},{64,82},{66,82},{68,82},{64,84},{62,84},{60,84},{58,84},{56,84},{54,84},{52,84},{50,84},{48,84},{46,84},{44,84},{42,84},{40,84},{38,84},{36,84},{34,84},{32,84},{30,84},{28,84},{26,84},{30,86},{32,86},{34,86},{36,86},{38,86},{40,86},{42,86},{44,86},{46,86},{48,86},{50,86},{52,86},{54,86},{56,86},{58,86},{60,86},{54,88},{52,88},{50,88},{48,88},{46,88},{44,88},{42,88},{40,88},{38,88},{36,88},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}}
   }
 };
-*/
 
+/*
 // Sean's travel LED array
 int[][][][] ledPhysLocs  = new int[][][][]
 { // Ports
@@ -93,15 +93,20 @@ int[][][][] ledPhysLocs  = new int[][][][]
     {{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0},{ 0, 0}}
   }
 };
-
+*/
 
 //String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\SunTest01_320x240_h264.mov";
-//String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\039341505-hd-sun-surface-solar-flares-3d_H264_420.mov";
-String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\output8.mov";
+//tring moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\039341505-hd-sun-surface-solar-flares-3d_H264_420.mov";
+//String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\output8.mov";
+//String moviePath = "C:\\pub\\schtuffa\\2015-11-25 LED Sun\\media\\SunTest03\\SunTest03_320x240_30_90_5000_flip_01.mov";
+//String moviePath = "C:\\priv\\Google Drive\\CFL\\LED Sun Krugman Studio\\LED_Sun\\MediaFiles\\Gen2\\Eyeball02_320x240_60_90_2000_01.mov";
+//String moviePath = "C:\\priv\\Google Drive\\CFL\\LED Sun Krugman Studio\\LED_Sun\\MediaFiles\\Gen2\\Moon02_320x240_60_90_2000_01.mov";
+String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\SunSurface02_320x240_SaS_90_2000_01.mov";
 
-String[] outFileNames = {"F:\\VIDEO_01.BIN"};
+//String[] outFileNames = {"F:\\VIDEO_01.BIN"};
+String[] outFileNames = {"C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\SunSurface02_320x240_SaS_90_2000_01_0_0_0_30.BIN"};
 //String[] outFileNames = {"\\SCH-I545\\Card\\VIDEO_01.BIN"};
-String[] serialPorts = {"COM26"}; 
+String[] serialPorts = {"COM24"}; 
 
 
 float ledLocScaler = 2.0;
@@ -111,8 +116,11 @@ int ledLocYOffset = 0;
 float hue = 0.0;
 float brightness = 0.0;
 float contrast = 1.0;
-int smoothing = 0;
 float gamma = 1.8;
+float smoothing = 0.0;
+float nSmoothWaves = 0;
+float smoothMax = 2.0;
+float smoothCenter = 0.0;
 
 float targetFrameRate = 30.0;
 
@@ -161,6 +169,8 @@ boolean ledImageLocked = false;
 
 Params myParams = new Params();
 
+int lastReportedTime = 0;
+
 void setup() {
   // Setup Params
   myParams.ledLocScaler = ledLocScaler;
@@ -169,8 +179,11 @@ void setup() {
   myParams.hue = hue;
   myParams.brightness = brightness;
   myParams.contrast = contrast;
-  myParams.smoothing = smoothing;
   myParams.gamma = gamma;
+  myParams.smoothing = smoothing;
+  myParams.nSmoothWaves = nSmoothWaves;
+  myParams.smoothMax = smoothMax;
+  myParams.smoothCenter = smoothCenter;
   myParams.targetFrameRate = targetFrameRate;
   myParams.maxVideoRes = maxVideoRes;
   
@@ -227,19 +240,28 @@ void movieEvent(Movie m) {
   adjustHue(ledImage, myParams.hue);  
   adjustBrightness(ledImage, myParams.brightness);
   adjustContrast(ledImage, myParams.contrast);  
-  if (myParams.smoothing > 0) {
+  
+  
+  if (myParams.nSmoothWaves > 0) {
+  //if (myParams.smoothing > 0) {
     //ledImage.filter(BLUR, myParams.smoothing);
     
     // Perform smoothing that changes over the course of the movie
-    int nWaves = 4; // Number of cosine waves in movie duration
-    float minSmoothing = 0; // mininum amount of smoothing
-    float maxSmoothing = 5; // Peak smoothing
-    float smoothing = cos(m.time() / m.duration() * TWO_PI * nWaves);
-    // Flip and map cosine output to min/max smoothing 
-    smoothing = map(smoothing, 1, -1, minSmoothing, maxSmoothing);
-    //(smoothing - 1.0) / -2.0 * maxSmoothing;
+    //myParams.nSmoothWaves = 2; // Number of cosine waves in movie duration
+    //float myParams.smoothMax = 5; // Peak smoothing
+    float smoothing;
+    smoothing = cos(m.time() / m.duration() * TWO_PI * myParams.nSmoothWaves);
+    // Flip and map cosine output to center/max smoothing 
+    smoothing = map(smoothing, -1, 1, myParams.smoothCenter - myParams.smoothMax, myParams.smoothMax);
+    smoothing = constrain(smoothing, 0, myParams.smoothMax); // Constrain 0 to smoothMax
+    myParams.smoothing = smoothing;
+  }
+  if (myParams.smoothing > 0) {
+    // Apply smoothing to the image
     ledImage.filter(BLUR, myParams.smoothing);
   }
+  
+  //}
   ledImageLocked = false; // unlock image
 
   // Write frame to the Teensy on each serial port
@@ -353,6 +375,17 @@ void movieEvent(Movie m) {
   }
   mFrameRateCounter = millis(); 
   mFrameCounter++; 
+  
+  // Report the time of the movie every 1/10 duration
+  if (LOG_LEVEL >= LOG_ERROR) {
+    if (((int) m.time()) > lastReportedTime ) {
+      if ((((int) m.time()) % ((int)(m.duration() / 10))) == 0) {
+        println("Movie.time() = " + m.time() + " / " + m.duration());
+        println("Smoothing = " + myParams.smoothing);
+        lastReportedTime = int(m.time());
+      }
+    }
+  }
 }
 
 // Grab data from video frame specified by ledPhysLocs
@@ -532,7 +565,7 @@ void draw() {
   
   if (serialSdWriteOn) {
     //if (myMovie.time() >= 10) {
-    if (myMovie.time() >= myMovie.duration()) {
+    if (myMovie.time() >= myMovie.duration() - 1 / myParams.targetFrameRate) {
       println("Movie serial SD writing complete!");
       myMovie.stop();
       isPlaying = false;
@@ -862,7 +895,10 @@ class Params {
   public float hue;
   public float brightness;
   public float contrast;
-  public int smoothing;
+  public float smoothing;
+  public float nSmoothWaves;
+  public float smoothMax;
+  public float smoothCenter;
   public float gamma;
   public float targetFrameRate;
   public int maxVideoRes;
@@ -893,18 +929,21 @@ class Params {
               try {
                 field.set(this, int(tokens[1]));
               } catch (Exception e) {
+                println("type.equals(int) failed");
                 e.printStackTrace();
               }
             }else if (type.equals("float")) {
               try {
                 field.set(this, float(tokens[1]));
               } catch (Exception e) {
+                println("type.equals(float) failed");
                 e.printStackTrace();
               }
             }else if (type.equals("class java.lang.String")) {
               try {
                 field.set(this, tokens[1]);
               } catch (Exception e) {
+                println("type.equals(string) failed");
                 e.printStackTrace();
               }
             }
@@ -1059,11 +1098,13 @@ void keyReleased() {
       isPlaying = true;
     }
     println("serialSdWriteOn=" + serialSdWriteOn);
-  } else if (key == 'm') {
+  } 
+  /*else if (key == 'm') {
     // Toggle movie display
     movieOn = !movieOn;
     println("movieOn=" + movieOn);
-  } else if (key == 'v') {
+  } */
+  else if (key == 'v') {
     // Toggle sampling display
     sampledValuesOn = !sampledValuesOn;
     println("sampledValuesOn=" + sampledValuesOn);
@@ -1137,6 +1178,22 @@ void keyPressed() {
   if (key == 's') {
     myParams.smoothing = max(0, myParams.smoothing - 1);
     println("Smoothing=" + myParams.smoothing);
+  }
+  if (key == 'N') {
+    myParams.nSmoothWaves = min(1920, myParams.nSmoothWaves + 1);
+    println("nSmoothWaves=" + myParams.nSmoothWaves);
+  }
+  if (key == 'n') {
+    myParams.nSmoothWaves = max(0, myParams.nSmoothWaves - 1);
+    println("nSmoothWaves=" + myParams.nSmoothWaves);
+  }
+  if (key == 'M') {
+    myParams.smoothMax = min(1920, myParams.smoothMax + 1);
+    println("smoothMax=" + myParams.smoothMax);
+  }
+  if (key == 'm') {
+    myParams.smoothMax = max(0, myParams.smoothMax - 1);
+    println("smoothMax=" + myParams.smoothMax);
   }
   if (key == 'B') {
     myParams.brightness = min(255, myParams.brightness + 1);
