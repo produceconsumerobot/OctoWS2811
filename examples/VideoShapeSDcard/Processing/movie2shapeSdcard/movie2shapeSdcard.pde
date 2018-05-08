@@ -122,6 +122,7 @@ float smoothing = 0.0;
 float nSmoothWaves = 0;
 float smoothMax = 2.0;
 float smoothCenter = 0.0;
+float testparam = 0.0;
 
 float targetFrameRate = 30.0;
 
@@ -168,16 +169,19 @@ int LOG_LEVEL = LOG_ERROR;
 
 boolean ledImageLocked = false;
 
-Params myParams = new Params();
+Params myParams;
+
 
 int lastReportedTime = 0;
 
 void setup() {
   size(10, 10);  // create the window
-  
+ 
   myMovie = new Movie(this, moviePath);
   
   // Setup Params
+  // ToDo: Params would be nice as a JSONObject
+  myParams = new Params();
   myParams.ledLocScaler = ledLocScaler;
   myParams.ledLocXOffset = ledLocXOffset;
   myParams.ledLocYOffset = ledLocYOffset;
@@ -191,6 +195,7 @@ void setup() {
   myParams.smoothCenter = smoothCenter;
   myParams.targetFrameRate = targetFrameRate;
   myParams.maxVideoRes = maxVideoRes;
+  myParams.ledPhysLocs = ledPhysLocs;
   
   println(myParams.toString());
 
@@ -907,6 +912,7 @@ class Params {
   public float gamma;
   public float targetFrameRate;
   public int maxVideoRes;
+  public int[][][][] ledPhysLocs;
   
   public String paramFileName = "params.txt";
  
@@ -926,29 +932,32 @@ class Params {
         String[] m = match(line, field.getName());
         if (m != null) {
           //print(" *" + m.length);
-          String type = field.getType().toString();
-          //print(type);
+          Class type = field.getType();
+          String typeStr = type.toString();
+          //print(typeStr);
           String[] tokens = splitTokens(line);
           if (tokens != null && tokens.length > 1) {
-            if (type.equals("int")) {
+            if (type.isArray()) {
+              
+            }else if (typeStr.equals("int")) {
               try {
                 field.set(this, int(tokens[1]));
               } catch (Exception e) {
-                println("type.equals(int) failed");
+                println("typeStr.equals(int) failed");
                 e.printStackTrace();
               }
-            }else if (type.equals("float")) {
+            }else if (typeStr.equals("float")) {
               try {
                 field.set(this, float(tokens[1]));
               } catch (Exception e) {
-                println("type.equals(float) failed");
+                println("typeStr.equals(float) failed");
                 e.printStackTrace();
               }
-            }else if (type.equals("class java.lang.String")) {
+            }else if (typeStr.equals("class java.lang.String")) {
               try {
                 field.set(this, tokens[1]);
               } catch (Exception e) {
-                println("type.equals(string) failed");
+                println("typeStr.equals(string) failed");
                 e.printStackTrace();
               }
             }
@@ -998,6 +1007,87 @@ class Params {
   }
 }
 // -------- END CLASS PARAMS --------- //
+
+void loadLedLocsFromJson() {
+  println("Loading LED locations from file...");
+  
+  // NOTE: This only works if the JSON conforms to int[][][][]
+  // i.e. all ports must have the same number of strips and all 
+  // strips must have the same number of LEDs
+  
+  // ToDo: rework code to no longer use int[][][][]
+  
+  boolean dimsLoaded = false;
+  
+  JSONObject ledPhysLocsJSON = new JSONObject();
+  ledPhysLocsJSON = loadJSONObject("ledPhysLocs.json");
+  
+  JSONArray ports = ledPhysLocsJSON.getJSONArray("ports");
+  //ledPhysLocs.resize(ports.size());
+  for (int p=0; p<ports.size(); p++) {
+    JSONObject port = ports.getJSONObject(p);
+    JSONArray strips = port.getJSONArray("strips");
+    for (int s=0; s<strips.size(); s++) {
+      JSONObject strip = strips.getJSONObject(s);
+      JSONArray leds = strip.getJSONArray("leds");
+      for (int l=0; l<leds.size(); l++) {
+        if (!dimsLoaded) {
+          // We have new dims loaded
+          dimsLoaded = true;
+          ledPhysLocs = new int[ports.size()][strips.size()][leds.size()][3];
+        }
+        JSONObject led = leds.getJSONObject(l);
+        ledPhysLocs[p][s][l][0] = led.getInt("x");
+        ledPhysLocs[p][s][l][1] = led.getInt("y");
+        ledPhysLocs[p][s][l][2] = led.getInt("radius");
+      }
+    }
+  }
+}
+
+void saveLedLocsToJson() {
+  println("Saving LED locations to file...");
+
+  // JSON structure  
+  //{'ports': [ 
+  //    {'strips': [ 
+  //        {'leds': [
+  //            {'x': , 'y': , 'radius': },
+  //            {'x': , 'y': , 'radius': },
+  //            {'x': , 'y': , 'radius': }
+  //        ] },
+  //        {'leds': [
+  //            {'x': , 'y': , 'radius': },
+  //            {'x': , 'y': , 'radius': }
+  //        ] }
+  //    ] }
+  //] }
+  
+  JSONObject ledPhysLocsJSON = new JSONObject();
+  JSONArray ports = new JSONArray();
+  for (int p=0; p<ledPhysLocs.length; p++) {
+    JSONObject port = new JSONObject();
+    JSONArray strips = new JSONArray();
+    for (int s=0; s<ledPhysLocs[p].length; s++) {
+      JSONObject strip = new JSONObject();
+      JSONArray leds = new JSONArray();
+      for (int l=0; l<ledPhysLocs[p][s].length; l++) {
+        JSONObject led = new JSONObject();
+        led.setInt("x", ledPhysLocs[p][s][l][0]);
+        led.setInt("y", ledPhysLocs[p][s][l][1]);
+        led.setInt("radius", 1);
+        leds.setJSONObject(l, led);
+      }
+      strip.setJSONArray("leds", leds);
+      strips.setJSONObject(s, strip);
+    }
+    port.setJSONArray("strips", strips);
+    ports.setJSONObject(p, port);
+  }
+  ledPhysLocsJSON.setJSONArray("ports", ports);
+  
+  saveJSONObject(ledPhysLocsJSON, "ledPhysLocs.json");
+}
 
 // respond to mouse clicks as pause/play
 void mousePressed() {
@@ -1147,10 +1237,12 @@ void keyReleased() {
     println("Loading Parameters: " + myParams.paramFileName);
     myParams.load();
     println(myParams.toString());
+    loadLedLocsFromJson();
   } else if (key == '}') {
     println("Saving Parameters: " + myParams.paramFileName);
     println(myParams.toString());
     myParams.save();
+    saveLedLocsToJson();
   } else if (key == '&') {
     serialOutOn = false;
     delay(50);
