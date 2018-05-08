@@ -3,7 +3,8 @@ VideoShapeSDcard
 Combination of PaulStoffregen's VideoDisplay and VideoSDcard to enable movies to be viewed directly via serial communication with the Teensy or downloaded over serial and stored on the Teensy SD card for viewing when disconnected from the computer. The code also permits an arbitrary pixel arrangement to be used.
 
 ## Requires
-Processing 2
+* Processing 3 (tested with 3.3.7)
+* Video library
 
 ## Usage
 ### Change variables to match your system:
