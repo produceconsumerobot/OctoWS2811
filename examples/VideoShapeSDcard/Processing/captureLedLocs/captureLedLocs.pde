@@ -1,5 +1,7 @@
 import gab.opencv.*;
 import processing.video.*;
+import java.awt.Rectangle;
+import org.opencv.core.Point;
 
 //Movie video;
 OpenCV opencv;
@@ -47,16 +49,17 @@ void draw() {
     //readCamera();
   }
   
+  pushMatrix();
   if (drawImage != null) {
     //image(drawImage, 0, 0);
   
   
-    pushMatrix();
+    
     scale(0.5);
     image(background, 0, 0);
     image(foreground, background.width, 0);
     image(diffImage, background.width, background.height);
-    popMatrix();
+    
   }
   
   
@@ -64,21 +67,43 @@ void draw() {
   
   if (opencv != null) {
     
-    
-    
     //opencv.loadImage(cam);
     //opencv.updateBackground();
     //opencv.dilate();
     //opencv.erode();
+    translate(background.width, 0);
     noFill();
     stroke(255, 0, 0);
     strokeWeight(3);
-    for (Contour contour : opencv.findContours()) {
-      contour.draw();
-    }  
+    float maxArea = 0;
+    int maxIndex = 0;
+    ArrayList<Contour> contours = opencv.findContours();
+    if (contours.size() > 0) {
+      for (int i=0; i < contours.size(); i++) {
+        if (contours.get(i).area() > maxArea) {
+          maxArea = contours.get(i).area();
+          maxIndex = i;
+        }
+      }
+      
+      color c;
+      contours.get(maxIndex).draw();
+      c = color(20, 75, 200);
+      stroke(c);
+      contours.get(maxIndex).getConvexHull().draw();
+      c = color(20, 200, 75);
+      stroke(c);
+      Rectangle box = contours.get(maxIndex).getBoundingBox();
+      //rect(box.x, box.y, box.width, box.height);
+      float ledX = box.x + box.width / 2;
+      float ledY = box.y + box.height / 2;
+      float ledRadius = min(box.width, box.height) / 2;
+      ellipseMode(RADIUS);
+      ellipse(ledX, ledY, ledRadius, ledRadius);
+    }
   }  
 
-
+  popMatrix();
 
 }
 
@@ -108,14 +133,17 @@ void readCamera() {
 void keyReleased() {
   if (key == ' ') {
     readCamera();
-    //if (opencv != null) {
+    if (background != null) {
       if (getBkgnd) {
         
         
         background.copy(cam, 0, 0, cam.width, cam.height, 0, 0, cam.width, cam.height);
-        
-        //opencv.loadImage(background);
-        opencv = new OpenCV(this, background);
+
+        opencv = new OpenCV(this, cam.width, cam.height);
+        opencv.startBackgroundSubtraction(2, 3, 0.5);
+        opencv.loadImage(background);
+        opencv.updateBackground();
+        //opencv = new OpenCV(this, background);
         drawImage = background;
         //opencv.updateBackground();
         //background = opencv.getSnapshot(opencv.getB()); 
@@ -123,20 +151,21 @@ void keyReleased() {
       } else {
         if (opencv != null) {
         foreground.copy(cam, 0, 0, cam.width, cam.height, 0, 0, cam.width, cam.height);
-        opencv.diff(foreground);
-        
-        diffImage = opencv.getSnapshot();
-        drawImage = diffImage;
+        opencv.loadImage(foreground);
+        opencv.updateBackground();
+        //opencv.diff(foreground);
+        //diffImage = opencv.getSnapshot();
+        drawImage = foreground;
         
         println("Updating foreground");
         //foreground = opencv.getSnapshot(opencv.getB()); 
-        //opencv.erode();
-        //opencv.dilate();
+        opencv.erode();
+        opencv.dilate();
         }
     
       }
       getBkgnd = !getBkgnd;
-    //}
+    }
   }
 }
     
