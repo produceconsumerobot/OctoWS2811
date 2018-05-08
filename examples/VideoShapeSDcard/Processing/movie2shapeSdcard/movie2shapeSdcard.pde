@@ -101,7 +101,8 @@ int[][][][] ledPhysLocs  = new int[][][][]
 //String moviePath = "C:\\pub\\schtuffa\\2015-11-25 LED Sun\\media\\SunTest03\\SunTest03_320x240_30_90_5000_flip_01.mov";
 //String moviePath = "C:\\priv\\Google Drive\\CFL\\LED Sun Krugman Studio\\LED_Sun\\MediaFiles\\Gen2\\Eyeball02_320x240_60_90_2000_01.mov";
 //String moviePath = "C:\\priv\\Google Drive\\CFL\\LED Sun Krugman Studio\\LED_Sun\\MediaFiles\\Gen2\\Moon02_320x240_60_90_2000_01.mov";
-String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\SunSurface02_320x240_SaS_90_2000_01.mov";
+//String moviePath = "C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\SunSurface02_320x240_SaS_90_2000_01.mov";
+String moviePath = "C:/priv/gd2/Dropbox/LocalDev/Sean/Processing/Processing3.0/videoExample01/SunSurface02_320x240_SaS_90_2000_01.mov";
 
 //String[] outFileNames = {"F:\\VIDEO_01.BIN"};
 String[] outFileNames = {"C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\SunSurface02_320x240_SaS_90_2000_01_0_0_0_30.BIN"};
@@ -128,7 +129,7 @@ int maxVideoRes = 540;
 
 // --------- END USER DEFINED VARIABLES ------------- //
 
-Movie myMovie = new Movie(this, moviePath);
+Movie myMovie;
 
 FileOutputStream[] outFiles = new FileOutputStream[outFileNames.length];     // edit output filename below...
 
@@ -172,6 +173,10 @@ Params myParams = new Params();
 int lastReportedTime = 0;
 
 void setup() {
+  size(10, 10);  // create the window
+  
+  myMovie = new Movie(this, moviePath);
+  
   // Setup Params
   myParams.ledLocScaler = ledLocScaler;
   myParams.ledLocXOffset = ledLocXOffset;
@@ -203,7 +208,7 @@ void setup() {
   // Set up the Gamma table
   setupGammaTable(myParams.gamma);
   
-  size(10, 10);  // create the window
+
   
   myMovie.frameRate(myParams.targetFrameRate);
   frameRate(myParams.targetFrameRate);
