@@ -924,7 +924,7 @@ class Params {
           String type = field.getType().toString();
           //print(type);
           String[] tokens = splitTokens(line);
-          if (tokens != null & tokens.length > 1) {
+          if (tokens != null && tokens.length > 1) {
             if (type.equals("int")) {
               try {
                 field.set(this, int(tokens[1]));

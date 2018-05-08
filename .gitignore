@@ -1,3 +1,17 @@
+# Media / Data files
+*.BIN
+*.mov
+*.mp4
+*.psd
+*.gif
+*.fbr
+*.csv
+*.png
+*.m1v
+*.avi
+*.m2v
+*.wmv
+
 # Compiled Object files
 *.slo
 *.lo
