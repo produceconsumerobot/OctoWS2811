@@ -37,6 +37,19 @@ import processing.*;
 import java.awt.Color;
 import processing.core.*;
 
+  
+  public enum SerialModes {
+  OFF,
+  SERIAL_DISPLAY,
+  SERIAL_SD_WRITE;
+  }
+  
+  public enum LedModes {
+    RGB,
+    GRB;
+  }
+
+
 public class OctoWS2811 {
   //private color c;
  
@@ -73,17 +86,7 @@ public class OctoWS2811 {
     setupGammaTable(_gamma);
     
   }
-  
-  public enum SerialModes {
-  OFF,
-  SERIAL_DISPLAY,
-  SERIAL_SD_WRITE;
-  }
-  
-  public enum LedModes {
-    RGB,
-    GRB;
-  }
+
   
   public void setup(String serialPort) {
     _serialPort = serialPort;
@@ -103,7 +106,7 @@ public class OctoWS2811 {
   * 
   * @param image - A color[][] to be written
   */
-  public boolean writeFrame(Color[][] colorData) {
+  public boolean writeFrame(color[][] colorData) {
     int mask;
     int pixel[] = new int[8];
     int offset = 0;
@@ -152,7 +155,7 @@ public class OctoWS2811 {
     for (int l = 0; l < _nLedsPerStrip; l++) {
       for (int s = 0; s < 8; s++) {
         if (s < _nStrips && s < colorData.length && l < colorData[s].length) {
-          pixel[s] = colorData[s][l].getRGB();
+          pixel[s] = colorData[s][l];//.getRGB();
         }
         else {
           pixel[s] = 0;
