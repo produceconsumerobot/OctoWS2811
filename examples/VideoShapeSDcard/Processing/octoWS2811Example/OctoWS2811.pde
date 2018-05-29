@@ -33,9 +33,8 @@
 // boolean setup(string[] serialPorts, string ledLocationsFile)
 
 import processing.serial.*;
-import processing.*;
 import java.awt.Color;
-import processing.core.*;
+//import processing.core.*;
 
   
   public enum SerialModes {
