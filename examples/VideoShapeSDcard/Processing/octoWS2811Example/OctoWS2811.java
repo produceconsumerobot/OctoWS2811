@@ -1,6 +1,6 @@
 
 // ------------------------------------------------------------------------------
- //package com.ProduceConsumeRobot.OctoWS2811;
+package com.ProduceConsumeRobot.OctoWS2811;
 
 
 //import processing.serial.*;
@@ -37,6 +37,9 @@ import java.awt.Color;
 //import processing.core.*;
 
   
+public class OctoWS2811 {
+  //private color c;
+  
   public enum SerialModes {
   OFF,
   SERIAL_DISPLAY,
@@ -47,10 +50,6 @@ import java.awt.Color;
     RGB,
     GRB;
   }
-
-
-public class OctoWS2811 {
-  //private color c;
  
   private boolean _isMaster;
   private String _serialPort;
@@ -105,7 +104,7 @@ public class OctoWS2811 {
   * 
   * @param image - A color[][] to be written
   */
-  public boolean writeFrame(color[][] colorData) {
+  public boolean writeFrame(Color[][] colorData) {
     int mask;
     int pixel[] = new int[8];
     int offset = 0;
@@ -154,7 +153,7 @@ public class OctoWS2811 {
     for (int l = 0; l < _nLedsPerStrip; l++) {
       for (int s = 0; s < 8; s++) {
         if (s < _nStrips && s < colorData.length && l < colorData[s].length) {
-          pixel[s] = colorData[s][l];//.getRGB();
+          pixel[s] = colorData[s][l].getRGB();
         }
         else {
           pixel[s] = 0;
@@ -248,19 +247,21 @@ public class OctoWS2811 {
           if (line != null) {
             System.out.print(line);
             // Check for an error message
-            if (match(line, "error:") != null) {
-              println("Error detected");
-            } else if (match(line, "File opened:") != null) {
+            //if (match(line.matches(, "error:") != null) {
+            if (line.equals("error:")) {
+              System.out.println("Error detected");
+            //} else if (match(line, "File opened:") != null) {
+            } else if (line.equals("File opened:")) {
               success = true;
               break;
             }
           }
-          delay(20); // Wait for all messages to come through
+          Thread.sleep(20); // Wait for all messages to come through
           line = _ledSerial.readStringUntil(10);
           tries++;
         }
       } catch (Exception e) { 
-        println("Error: serial write failed");
+        System.out.println("Error: serial write failed");
         e.printStackTrace();
         //exit();
       } 
@@ -271,7 +272,7 @@ public class OctoWS2811 {
       _elapsed_microseconds = 0L;
       return true;
     } else {
-      println("OctoWs2811: openSerialSdWrite failed");
+      System.out.println("OctoWs2811: openSerialSdWrite failed");
       closeSerialOut();
       return false;
     }
@@ -283,7 +284,7 @@ public class OctoWS2811 {
       _serialMode = SerialModes.SERIAL_DISPLAY;
       return true;
     } else {
-      println("OctoWs2811: openSerialWrite failed");
+      System.out.println("OctoWs2811: openSerialWrite failed");
       closeSerialOut();
       return false;
     }
@@ -300,41 +301,43 @@ public class OctoWS2811 {
       // Clear the serial buffer
       String line = "";
       while (line != null) {
-        delay(100);
+        Thread.sleep(100);
         line = ledSerial.readStringUntil(10);
-        print(line);
+        System.out.print(line);
       }
       // Switch Teensy to SERIAL_serialMode
       ledSerial.write('^');
-      delay(50);
-      println(portName + ": " + ledSerial.readStringUntil(10));
+      Thread.sleep(50);
+      System.out.println(portName + ": " + ledSerial.readStringUntil(10));
       ledSerial.write('?');
     } catch (Throwable e) {
-      println("Serial port " + _serialPort + " does not exist or is non-functional");
+      System.out.println("Serial port " + _serialPort + " does not exist or is non-functional");
       e.printStackTrace();
       errorCount++;
       return errorCount;
     }
-    delay(50);
+    try {
+      Thread.sleep(50);
+    } catch (Throwable e) {e.printStackTrace();}
     String line = ledSerial.readStringUntil(10);
     if (line == null) {
-      println("Serial port " + _serialPort + " is not responding.");
-      println("Is it really a Teensy 3.0 running VideoDisplay?");
+      System.out.println("Serial port " + _serialPort + " is not responding.");
+      System.out.println("Is it really a Teensy 3.0 running VideoDisplay?");
       errorCount++;
       return errorCount;
     }
-    print(line);
+    System.out.print(line);
     String param[] = line.split(",");
     if (param == null || param.length < 2) {
-      println("Error: port " + _serialPort + " did not return array size from LED config query");
+      System.out.println("Error: port " + _serialPort + " did not return array size from LED config query");
       errorCount++;
       return errorCount;
     } 
     else {
       _nStrips = Integer.parseInt(param[1]);
-      println("OctoWS2811: " + _nStrips + " strips");
+      System.out.println("OctoWS2811: " + _nStrips + " strips");
       _nLedsPerStrip = Integer.parseInt(param[0]);
-      println("OctoWS2811: " + _nLedsPerStrip + " Leds Per Strip");      
+      System.out.println("OctoWS2811: " + _nLedsPerStrip + " Leds Per Strip");      
     }
     
     if (errorCount == 0) {
@@ -354,7 +357,7 @@ public class OctoWS2811 {
         closeSerialSdWrite();
       }
       closeSerialOut();
-      println("OctoWs2811: Serial mode OFF");
+      System.out.println("OctoWs2811: Serial mode OFF");
       return true;
     }
     if (s == SerialModes.SERIAL_DISPLAY) {
@@ -363,14 +366,14 @@ public class OctoWS2811 {
       }
       closeSerialOut();
       if (openSerialWrite()) {
-        println("OctoWs2811: SERIAL_DISPLAY mode");
+        System.out.println("OctoWs2811: SERIAL_DISPLAY mode");
         return true;
       }
     }
     if (s == SerialModes.SERIAL_SD_WRITE) {
       closeSerialOut();
       if (openSerialWrite()) {
-        println("OctoWs2811: SERIAL_SD_WRITE mode");
+        System.out.println("OctoWs2811: SERIAL_SD_WRITE mode");
         return true;
       }
     }
@@ -380,7 +383,7 @@ public class OctoWS2811 {
   void setupGammaTable(float gamma) {
     // Set up the Gamma table
     for (int i=0; i < 256; i++) {
-      _gammatable[i] = (int)(pow((float)(i / 255.0), gamma) * 255.0 + 0.5);
+      _gammatable[i] = (int)(Math.pow((float)(i / 255.0), gamma) * 255.0 + 0.5);
     }
   }
 }
