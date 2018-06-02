@@ -1,17 +1,18 @@
 
 import processing.serial.*;
-import com.ProduceConsumeRobot.OctoWS2811.*;
+//import com.ProduceConsumeRobot.OctoWS2811.*;
 import java.awt.Color;
 
-String serialPort = "COM22";
+String serialPort = "COM23";
 OctoWS2811 octo;
 Color[][] colorData;
 int strip;
 int led;
 
 void setup() {
-  octo = new OctoWS2811(new Serial(this));
-  octo.setup(serialPort);
+  size(640, 360);
+ //<>//
+  octo = new OctoWS2811(this, serialPort);
   octo.setSerialMode(OctoWS2811.SerialModes.SERIAL_DISPLAY);
   
   strip = 0;
@@ -26,7 +27,7 @@ void setup() {
   }
 }
 
-void main() {
+void draw() {
 
   // Zero LED
   colorData[strip][led] = new Color(0);
@@ -42,9 +43,9 @@ void main() {
   }
   
   // Turn on LED
-  colorData[strip][led] = new Color(0);;
+  colorData[strip][led] = new Color(255, 0, 0);
   
   octo.writeFrame(colorData);
   
-  delay(500);
+  delay(5);
 }

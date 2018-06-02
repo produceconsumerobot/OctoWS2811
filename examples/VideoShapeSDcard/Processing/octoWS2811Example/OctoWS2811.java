@@ -1,14 +1,5 @@
-
 // ------------------------------------------------------------------------------
-package com.ProduceConsumeRobot.OctoWS2811;
-
-
-//import processing.serial.*;
-
-//import java.awt.Color;
-
-//import processing.*;
-
+//package com.ProduceConsumeRobot.OctoWS2811;
 
 // serial display writing
 //  serialConfigure
@@ -30,11 +21,9 @@ package com.ProduceConsumeRobot.OctoWS2811;
 //  colorWiring
 //  writeFrame
 
-// boolean setup(string[] serialPorts, string ledLocationsFile)
-
 import processing.serial.*;
 import java.awt.Color;
-//import processing.core.*;
+import processing.core.*;
 
   
 public class OctoWS2811 {
@@ -62,14 +51,26 @@ public class OctoWS2811 {
   long _elapsed_picoseconds;
   long _elapsed_microseconds;
   long _picoseconds_per_frame;
-  //private PApplet _pApplet;
+  private PApplet _pApplet;
   int[] _gammatable;
   private float _gamma;
- 
-  public OctoWS2811(Serial ledSerial) {
+   //<>//
+  public OctoWS2811(PApplet pApplet, String serialPort) {
+    if (pApplet != null) {
+      init();
+      _serialPort = serialPort;
+      //_ledSerial = new Serial(pApplet, serialPort);
+      _pApplet = pApplet;
+    } else {
+       throw new NullPointerException();
+    }
+  }
+
+  private void init() {
     _isMaster = true;
     _serialPort = "";
-    _ledSerial = ledSerial;
+    _ledSerial = null;
+    _pApplet = null;
     _nStrips = 8;
     _nLedsPerStrip = 552;
     _serialMode = SerialModes.OFF;
@@ -78,23 +79,15 @@ public class OctoWS2811 {
     _picoseconds_per_frame = (long)(1e12 /_targetFrameRate + 0.5);
     _elapsed_picoseconds=0L;
     _elapsed_microseconds=0L;
-    //_pApplet = pApplet;
     _gammatable = new int[256];
     _gamma = 1.8f;
     setupGammaTable(_gamma);
-    
-  }
-
-  
-  public void setup(String serialPort) {
-    _serialPort = serialPort;
   }
   
   public int getNumStrips() {
     return _nStrips;
   }
-  
-  
+    
   public int getNumLedsPerStrip() {
     return _nLedsPerStrip;
   }
@@ -247,9 +240,9 @@ public class OctoWS2811 {
           if (line != null) {
             System.out.print(line);
             // Check for an error message
-            //if (match(line.matches(, "error:") != null) {
+            //if (match(line.matches(, "error:") != null) { //<>//
             if (line.equals("error:")) {
-              System.out.println("Error detected");
+              System.out.println("Error detected"); //<>//
             //} else if (match(line, "File opened:") != null) {
             } else if (line.equals("File opened:")) {
               success = true;
@@ -262,7 +255,7 @@ public class OctoWS2811 {
         }
       } catch (Exception e) { 
         System.out.println("Error: serial write failed");
-        e.printStackTrace();
+        e.printStackTrace(); //<>//
         //exit();
       } 
     }      
@@ -294,24 +287,24 @@ public class OctoWS2811 {
   private int serialConfigure(String portName) {
     
     int errorCount = 0;
-    Serial ledSerial = _ledSerial;
+    //Serial ledSerial = _ledSerial;
     try {
-      //ledSerial = new Serial(_pApplet, portName);
-      if (ledSerial == null) throw new NullPointerException();
+      _ledSerial = new Serial(_pApplet, portName);
+      if (_ledSerial == null) throw new NullPointerException();
       // Clear the serial buffer
       String line = "";
       while (line != null) {
         Thread.sleep(100);
-        line = ledSerial.readStringUntil(10);
-        System.out.print(line);
+        line = _ledSerial.readStringUntil(10);
+        System.out.print("Serial read data: " + line);
       }
       // Switch Teensy to SERIAL_serialMode
-      ledSerial.write('^');
+      _ledSerial.write('^');
       Thread.sleep(50);
-      System.out.println(portName + ": " + ledSerial.readStringUntil(10));
-      ledSerial.write('?');
+      System.out.println(portName + ": " + _ledSerial.readStringUntil(10));
+      _ledSerial.write('?');
     } catch (Throwable e) {
-      System.out.println("Serial port " + _serialPort + " does not exist or is non-functional");
+      System.out.println("Serial port " + portName + " does not exist or is non-functional");
       e.printStackTrace();
       errorCount++;
       return errorCount;
@@ -319,9 +312,9 @@ public class OctoWS2811 {
     try {
       Thread.sleep(50);
     } catch (Throwable e) {e.printStackTrace();}
-    String line = ledSerial.readStringUntil(10);
+    String line = _ledSerial.readStringUntil(10);
     if (line == null) {
-      System.out.println("Serial port " + _serialPort + " is not responding.");
+      System.out.println("Serial port " + portName + " is not responding.");
       System.out.println("Is it really a Teensy 3.0 running VideoDisplay?");
       errorCount++;
       return errorCount;
@@ -329,10 +322,10 @@ public class OctoWS2811 {
     System.out.print(line);
     String param[] = line.split(",");
     if (param == null || param.length < 2) {
-      System.out.println("Error: port " + _serialPort + " did not return array size from LED config query");
+      System.out.println("Error: port " + portName + " did not return array size from LED config query");
       errorCount++;
       return errorCount;
-    } 
+    }  //<>//
     else {
       _nStrips = Integer.parseInt(param[1]);
       System.out.println("OctoWS2811: " + _nStrips + " strips");
@@ -341,7 +334,7 @@ public class OctoWS2811 {
     }
     
     if (errorCount == 0) {
-      _ledSerial = ledSerial;
+      //_ledSerial = ledSerial;
     }
     
     return errorCount;
