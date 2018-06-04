@@ -1,9 +1,13 @@
 /* captureLedLocs
     Uses computer vision to detect LED locations controlled by OctoWS2811.
+    Each LED is turned on one at a time and detected via background segmentation.
+    Locations of detected LEDs are saved in ledPhysLocs.json
     Usage:
     - Plug in Teensy/Octos
     - Plug in webcam (if not using integrated webcam)
     - Change user-defined variables if desired
+    - Run program
+    - When program is complete ledPhysLocs.json has all led locations
 */
 
 import gab.opencv.*;
@@ -16,16 +20,16 @@ import java.awt.Color;
 
 // ----------- USER-DEFINED VARIABLES ------------- //
 
-String serialPorts[] = {"COM23"};  // Serial ports of Teensy/Octos
+String serialPorts[] = {"COM22"};  // Serial ports of Teensy/Octos
 String cameraName = "Microsoft LifeCam Studio,size=640x480,fps=30";
-int cameraDelay = 100;      // Delay between LED-ON and camera frame capture. If you ever see any LEDs lit on the left pane, increase this number
-int ledDrawRadius = -1;     // -1 uses computer vision detected radius
+int cameraDelay = 150;      // Delay between LED-ON and camera frame capture. If you ever see any LEDs lit on the left pane, increase this number
+int ledDrawRadius = 2;     // -1 uses computer vision detected radius
 int maxTriesPerLed = 2;     // Number of times to try detecting an LED before moving on to next LED
 int maxMissedLedsInRow = 3; // Number of failed LEDs before moving on to next strip
 int minRadius = 1;          // Min size of CV LED detection
 int maxRadius = 100;        // Max size of CV LED detection
 int maxStrips = 8;          // Number of LED strips
-int maxLedsPerStrip = 15;   // Number of LEDs per strip
+int maxLedsPerStrip = 400;   // Number of LEDs per strip
 Color backgroundLedColor = new Color(0, 0, 0);    // Color of LEDs for background subtraction
 Color foregroundLedColor = new Color(255, 0, 0);  // Color of LEDs in ON state
 
@@ -430,123 +434,3 @@ void saveLedLocsToJson(int[][][][] ledPhysLocs) {
   
   saveJSONObject(ledPhysLocsJSON, "ledPhysLocs.json");
 }
-
-/* 
- Plan:
- for (numPorts) {
-  for (numStrips) {
-    for (maxLedsPerStrip) {
-      captureBackgroundImage
-      turnOnLed(testLed)
-      wait(waitTime);
-      captureForegroundImage
-      turnOffAllLeds()
-      if (ledRadius > minLedRadius, && ledRadius < maxLedRadius) {
-        JSONObject led = new JSONObject();
-        led.setInt("x", ledX);
-        led.setInt("y", ledY);
-        led.setInt("radius", ledRadius);
-        leds.setJSONObject(l, led
-      }
-      testLed++;
-      wait(waitTime);
-    }
-  }
-} */
-
-    
-    
-//void loadLedLocsFromJson() {
-//  println("Loading LED locations from file...");
-  
-//  // NOTE: This only works if the JSON conforms to int[][][][]
-//  // i.e. all ports must have the same number of strips and all 
-//  // strips must have the same number of LEDs
-  
-//  // ToDo: rework code to no longer use int[][][][]
-  
-//  boolean dimsLoaded = false;
-  
-//  JSONObject ledPhysLocsJSON = new JSONObject();
-//  ledPhysLocsJSON = loadJSONObject("ledPhysLocs.json");
-  
-//  JSONArray ports = ledPhysLocsJSON.getJSONArray("ports");
-//  //ledPhysLocs.resize(ports.size());
-//  for (int p=0; p<ports.size(); p++) {
-//    JSONObject port = ports.getJSONObject(p);
-//    JSONArray strips = port.getJSONArray("strips");
-//    for (int s=0; s<strips.size(); s++) {
-//      JSONObject strip = strips.getJSONObject(s);
-//      JSONArray leds = strip.getJSONArray("leds");
-//      for (int l=0; l<leds.size(); l++) {
-//      }
-//    }
-//  }
-  
-//  //JSONArray ports = ledPhysLocsJSON.getJSONArray("ports");
-//  //ledPhysLocs.resize(ports.size());
-//  for (int p=0; p<ports.size(); p++) {
-//    JSONObject port = ports.getJSONObject(p);
-//    JSONArray strips = port.getJSONArray("strips");
-//    for (int s=0; s<strips.size(); s++) {
-//      JSONObject strip = strips.getJSONObject(s);
-//      JSONArray leds = strip.getJSONArray("leds");
-//      for (int l=0; l<leds.size(); l++) {
-//        if (!dimsLoaded) {
-//          // We have new dims loaded
-//          dimsLoaded = true;
-//          ledPhysLocs = new int[ports.size()][strips.size()][leds.size()][3];
-//        }
-//        JSONObject led = leds.getJSONObject(l);
-//        ledPhysLocs[p][s][l][0] = led.getInt("x");
-//        ledPhysLocs[p][s][l][1] = led.getInt("y");
-//        ledPhysLocs[p][s][l][2] = led.getInt("radius");
-//      }
-//    }
-//  }
-//}
-
-//void saveLedLocsToJson() {
-//  println("Saving LED locations to file...");
-
-//  // JSON structure  
-//  //{'ports': [ 
-//  //    {'strips': [ 
-//  //        {'leds': [
-//  //            {'x': , 'y': , 'radius': },
-//  //            {'x': , 'y': , 'radius': },
-//  //            {'x': , 'y': , 'radius': }
-//  //        ] },
-//  //        {'leds': [
-//  //            {'x': , 'y': , 'radius': },
-//  //            {'x': , 'y': , 'radius': }
-//  //        ] }
-//  //    ] }
-//  //] }
-  
-//  JSONObject ledPhysLocsJSON = new JSONObject();
-//  JSONArray ports = new JSONArray();
-//  for (int p=0; p<ledPhysLocs.length; p++) {
-//    JSONObject port = new JSONObject();
-//    JSONArray strips = new JSONArray();
-//    for (int s=0; s<ledPhysLocs[p].length; s++) {
-//      JSONObject strip = new JSONObject();
-//      JSONArray leds = new JSONArray();
-//      for (int l=0; l<ledPhysLocs[p][s].length; l++) {
-//        JSONObject led = new JSONObject();
-//        led.setInt("x", ledPhysLocs[p][s][l][0]);
-//        led.setInt("y", ledPhysLocs[p][s][l][1]);
-//        led.setInt("radius", 1);
-//        leds.setJSONObject(l, led);
-//      }
-//      strip.setJSONArray("leds", leds);
-//      strips.setJSONObject(s, strip);
-//    }
-//    port.setJSONArray("strips", strips);
-//    ports.setJSONObject(p, port);
-//  }
-//  ledPhysLocsJSON.setJSONArray("ports", ports);
-  
-//  saveJSONObject(ledPhysLocsJSON, "ledPhysLocs.json");
-//}  
-  
