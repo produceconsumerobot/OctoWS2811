@@ -69,7 +69,7 @@
 // are arranged.  If 0, each strip begins on the left for its first row,
 // then goes right to left for its second row, then left to right,
 // zig-zagging for each successive row.
-#define LED_WIDTH      382   // number of LEDs horizontally
+#define LED_WIDTH      400   // number of LEDs horizontally
 #define LED_HEIGHT     8     // number of LEDs vertically (must be multiple of 8)
 
 #define FILENAME     "VIDEO_01.BIN"
