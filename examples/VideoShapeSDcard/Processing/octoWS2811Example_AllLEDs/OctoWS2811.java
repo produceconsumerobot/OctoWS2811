@@ -297,7 +297,10 @@ public class OctoWS2811 {
     //Serial ledSerial = _ledSerial;
     try {
       _ledSerial = new Serial(_pApplet, portName);
-      if (_ledSerial == null) throw new NullPointerException();
+      if (_ledSerial == null) {
+        Serial.list();
+        throw new NullPointerException();
+      }
       // Clear the serial buffer
       String line = "";
       while (line != null) {
