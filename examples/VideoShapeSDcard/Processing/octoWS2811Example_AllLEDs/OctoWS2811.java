@@ -1,3 +1,7 @@
+/* 
+Created by Sean M Montgomery 2018-06-05
+*/
+
 // ------------------------------------------------------------------------------
 //package com.ProduceConsumeRobot.OctoWS2811;
 
@@ -25,9 +29,7 @@ import processing.serial.*;
 import java.awt.Color;
 import processing.core.*;
 
-  
 public class OctoWS2811 {
-  //private color c;
   
   public enum SerialModes {
   OFF,
@@ -72,7 +74,7 @@ public class OctoWS2811 {
     _ledSerial = null;
     _pApplet = null;
     _nStrips = 8;
-    _nLedsPerStrip = 552;
+    _nLedsPerStrip = 552;  // Max at 60Hz refresh, see https://www.pjrc.com/store/octo28_adaptor.html
     _serialMode = SerialModes.OFF;
     _ledMode = LedModes.GRB;
     _targetFrameRate = (float) 60.0;
@@ -203,14 +205,16 @@ public class OctoWS2811 {
   // Close all serial ports
   private boolean closeSerialOut() {
     _serialMode = SerialModes.OFF;
-    try {
-      System.out.println("Closing serial port: " + _serialPort);
-      _ledSerial.stop();
-    } catch (Exception e) {
-      System.out.println("Error: " + _serialPort + ".stop() failed");
-      //e.printStackTrace();
-      //exit();
-      return false;
+    if (_ledSerial != null) {
+      try {
+        System.out.println("Closing serial port: " + _serialPort);
+        _ledSerial.stop();
+      } catch (Exception e) {
+        System.out.println("Error: " + _serialPort + ".stop() failed"); //<>//
+        //e.printStackTrace();
+        //exit();
+        return false;
+      }
     }
     return true;
   }
@@ -306,7 +310,7 @@ public class OctoWS2811 {
       while (line != null) {
         Thread.sleep(100);
         line = _ledSerial.readStringUntil(10);
-        System.out.print("Serial read data: " + line);
+        System.out.println("Serial read data: " + line);
       }
       // Switch Teensy to SERIAL_serialMode
       _ledSerial.write('^');
@@ -335,7 +339,7 @@ public class OctoWS2811 {
       System.out.println("Error: port " + portName + " did not return array size from LED config query");
       errorCount++;
       return errorCount;
-    }  //<>//
+    } 
     else {
       _nStrips = Integer.parseInt(param[1]);
       System.out.println("OctoWS2811: " + _nStrips + " strips");

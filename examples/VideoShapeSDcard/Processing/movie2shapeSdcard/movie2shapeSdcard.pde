@@ -112,10 +112,10 @@ import java.lang.reflect.Field;
 
 int[][][][] ledPhysLocs;
 String ledPhysLocsFilename = "ledPhysLocs_Led_Sun_01.json";
-String moviePath = "C:/priv/gd2/Dropbox/LocalDev/Sean/Processing/Processing3.0/videoExample01/SunSurface02_320x240_SaS_90_2000_01.mov";
+String moviePath = "C:/priv/gd2/Dropbox/LocalDev/Sean/Processing/Processing3.0/OctoWS2811/examples/VideoShapeSDcard/Processing/movie2shapeSdcard/Cool.mp4";
 
-String[] outFileNames = {"C:\\pub\\LocalDev\\Sean\\Processing2.0\\OctoWS2811\\examples\\VideoShapeSDcard\\Processing\\movie2shapeSdcard\\SunSurface02_320x240_SaS_90_2000_01_0_0_0_30.BIN"};
-String[] serialPorts = {"COM23"}; 
+String[] outFileNames = {"C:/priv/gd2/Dropbox/LocalDev/Sean/Processing/Processing3.0/OctoWS2811/examples/VideoShapeSDcard/Processing/movie2shapeSdcard/VIDEO_01.BIN"};
+String[] serialPorts = {"COM26"}; 
 
 float ledLocScaler = 2.0;
 int ledLocXOffset = 0;
@@ -134,6 +134,8 @@ float testparam = 0.0;
 float targetFrameRate = 30.0;
 
 int maxVideoRes = 540;
+
+float ledDrawRadius = -1.f;     // -1 uses computer vision detected radius
 
 // --------- END USER DEFINED VARIABLES ------------- //
 
@@ -542,10 +544,8 @@ void draw() {
           img.height / (locMax.y - locMin.y + drawRad*2.5)); 
         translate(img.width, 0); // Translate to sit next to movie
         scale(scaleFactor); // Scale up to fill space
-        translate(-locMin.x + drawRad, -locMin.y + drawRad); // Translate LED locations to start at origin
-        rectMode(RADIUS);
-        
-        
+        translate(-locMin.x, -locMin.y); // Translate LED locations to start at origin
+                
         for (int p=0; p<ledPhysLocs.length; p++) {
           for (int s=0; s<ledPhysLocs[p].length; s++) {
             for (int l=0; l<ledPhysLocs[p][s].length; l++) {
@@ -565,7 +565,13 @@ void draw() {
                 //blendMode(ADD);
                 noStroke();
                 fill(pixel);
-                rect(ledPhysLocs[p][s][l][0], ledPhysLocs[p][s][l][1], drawRad, drawRad); 
+                ellipseMode(RADIUS);
+                if (ledDrawRadius == -1 && ledPhysLocs[p][s][l].length > 2) {
+                  drawRad = ledPhysLocs[p][s][l][2] * myParams.ledLocScaler;
+                } else {
+                  drawRad = ledDrawRadius;
+                }
+                ellipse(ledPhysLocs[p][s][l][0], ledPhysLocs[p][s][l][1], drawRad, drawRad); 
                 //println((ledPhysLocs[p][s][l][0]-locMin.x + drawRad*2) * scaleFactor +img.width, width);
               }
             }
