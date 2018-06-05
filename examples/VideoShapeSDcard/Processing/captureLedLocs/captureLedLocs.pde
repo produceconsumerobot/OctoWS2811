@@ -12,7 +12,7 @@ import java.awt.Color;
 
 // ----------- USER-DEFINED VARIABLES ------------- //
 
-String serialPorts[] = {"COM26"};  // Serial ports of Teensy/Octos
+String serialPorts[] = {"COM28"};  // Serial ports of Teensy/Octos
 String _outFilename = "data/ledPhysLocs.json";  // LED physical locations file
 int camHeight = 640;        // Camera frame width to request
 int camWidth = 480;         // Camera frame height to request
@@ -27,7 +27,8 @@ int maxStrips = 8;          // Number of LED strips
 int maxLedsPerStrip = 400;  // Number of LEDs per strip
 Color backgroundLedColor = new Color(0, 0, 0);    // Color of LEDs for background subtraction
 Color foregroundLedColor = new Color(255, 0, 0);  // Color of LEDs in ON state
-OctoWS2811.LedModes ledColorOrder = OctoWS2811.LedModes.RGB;  // LED color order
+OctoWS2811.LedModes ledColorOrder = OctoWS2811.LedModes.GRB;  // LED color order
+boolean captureBkgndOnlyOnce = true;
 
 // --------- END USER-DEFINED VARIABLES ------------- //
 
@@ -58,24 +59,28 @@ JSONObject _ledPhysLocsJSON = new JSONObject();
 int LOG_ERROR = 3;
 int LOG_NOTIFY = 4;
 int LOG_VERBOSE = 5;
-int LOG_LEVEL = LOG_NOTIFY;
+int LOG_LEVEL = LOG_VERBOSE;
 
 int[][][][] _ledPhysLocs;
 
-boolean getBkgnd = true;
+boolean getBackground = true;
+boolean getForeground = false;
 boolean finished = false;
+boolean readyToGo = false;
 
 void setup() {
-  size(320, 240);
+  size(640, 480);
   
   for (int j=0; j<serialPorts.length; j++) {
     octos.add(new OctoWS2811(this, serialPorts[j]));
     octos.get(j).setSerialMode(OctoWS2811.SerialModes.SERIAL_DISPLAY);
-    octo.setLedMode(ledColorOrder);    
+    octos.get(j).setLedMode(ledColorOrder);    
   }
   
   initColorData();
   octos.get(_port).writeFrame(colorData);
+  
+  
   
   //final String id = showInputDialog("Please enter new ID");
   //selectOutput("Select a file to write to:", "fileSelected");
@@ -91,13 +96,16 @@ void setup() {
       println(cameras[i]);
     }
     
-    println("Loading: " + cameraName);
+    //println("Loading: " + cameraName);
     cam = new Capture(this, camHeight, camWidth, camFrameRate);
     println("Camera loaded: Width="+ cam.width + ", Height=" + cam.height + ", Rate=" + cam.frameRate);
     cam.start();  
-  }      
+  }    
   
   initLedPhysLocs(); //<>//
+  cameraDelayTimer = millis();
+  
+  println("Adjust your camera driver settings as desired and then hit 'ENTER' to begin");
 }
 
 void initLedPhysLocs() {
@@ -115,60 +123,75 @@ void initLedPhysLocs() {
 }
 
 void draw() {
-  
-  if (cam.available() == true && !finished) { //<>//
-    captureImage(); //<>//
-  }
-  
-  int bg = 50; //<>//
-  fill(bg,bg,bg);
-  stroke(bg,bg,bg);
-  rect(0,0,width,height);
-  
-  pushMatrix();
-  scale(0.5);
-  translate(0, screenTextHeight + padding);
-  
-  if (foreground != null && background != null) { 
-    
-    image(background, 0, 0);
-    image(foreground, background.width, 0);
-    
-    fill(0,0,0,0);
-  
-  
-    if (!finished) {
-      if (background != null) {
-        translate(background.width, 0);
-      }   
-      
-      if (ledContour != null) {
-        noFill();
-        stroke(255, 0, 0);
-        strokeWeight(3); 
-        ledContour.draw();
-        stroke(_ledContourColor);
-        ledContour.getConvexHull().draw();
-      }
-      if (ledLocation != null) {
-        stroke(_ledLocationColor);
-        ellipseMode(RADIUS);
-        ellipse(ledLocation.getInt("x"), ledLocation.getInt("y"), ledLocation.getInt("radius"), ledLocation.getInt("radius"));
-      } 
-    } else {
-      screenText = "COMPLETE";
+  if (readyToGo) {
+    if (cam.available() == true && !finished) { //<>//
+      //while (!readyToGo) {}
+      captureImage(); //<>//
     }
     
-    drawLedPhysLocs(_ledPhysLocs, float _ledDrawRadius, color __ledLocationColor)
+    int bg = 50; //<>//
+    fill(bg,bg,bg);
+    stroke(bg,bg,bg);
+    rect(0,0,width,height);
     
-    translate(0, -(screenTextHeight + padding));
-    textSize(screenTextHeight);
+    pushMatrix();
+    scale(0.5);
+    translate(0, screenTextHeight + padding);
+    
+    if (foreground != null && background != null) { 
+      
+      image(background, 0, 0);
+      image(foreground, background.width, 0);
+      
+      fill(0,0,0,0);
+    
+    
+      if (!finished) {
+        if (background != null) {
+          translate(background.width, 0);
+        }   
+        
+        if (ledContour != null) {
+          noFill();
+          stroke(255, 0, 0);
+          strokeWeight(3); 
+          ledContour.draw();
+          stroke(_ledContourColor);
+          ledContour.getConvexHull().draw();
+        }
+        if (ledLocation != null) {
+          stroke(_ledLocationColor);
+          ellipseMode(RADIUS);
+          ellipse(ledLocation.getInt("x"), ledLocation.getInt("y"), ledLocation.getInt("radius"), ledLocation.getInt("radius"));
+        } 
+      } else {
+        screenText = "COMPLETE";
+      }
+      
+      drawLedPhysLocs(_ledPhysLocs, _ledDrawRadius, _ledLocationColor);
+      
+      translate(0, -(screenTextHeight + padding));
+      textSize(screenTextHeight);
+      textAlign(CENTER, CENTER);
+      fill(_ledLocationColor);
+      text(screenText, background.width / 2, screenTextHeight / 2); 
+    }
+  
+    popMatrix();
+  } else {
+    if (cam.available() == true) {
+      cam.read();
+      pushMatrix();
+      scale(((float) width) / cam.width);
+      image(cam, 0, 0);
+      popMatrix();
+    }
+      
+    textSize(width/20);
     textAlign(CENTER, CENTER);
     fill(_ledLocationColor);
-    text(screenText, background.width / 2, screenTextHeight / 2); 
+    text("Adjust your camera driver\nsettings as desired\nand then hit 'ENTER' to begin", width / 2, height / 2); 
   }
-
-  popMatrix();
 }
 
 boolean incrementLed() {
@@ -178,12 +201,13 @@ boolean incrementLed() {
 
   // Increment LED
   _led++;
-  if (_led == maxLedsPerStrip || missedLeds == maxMissedLedsInRow) {
-    if (missedLeds == maxMissedLedsInRow) {
+  if (_led == maxLedsPerStrip || missedLeds >= maxMissedLedsInRow) {
+    if (missedLeds >= maxMissedLedsInRow) {
       if (LOG_LEVEL >= LOG_NOTIFY) {
         println("Hit maxMissedLedsInRow: Port=" + _port + ", Strip=" + _strip + ", LED=" + _led);
-        println("Skipping remainder of strip";
+        println("Skipping remainder of strip");
       }
+      missedLeds = 0;
     }
     _strip++;
     _led = 0;
@@ -270,18 +294,41 @@ void cvFindLed() {
     if (_strip < octos.get(_port).getNumStrips() && _led < octos.get(_port).getNumLedsPerStrip()) {
       colorData[_strip][_led] = backgroundLedColor;
       octos.get(_port).writeFrame(colorData);
+      if (LOG_LEVEL >= LOG_VERBOSE)  {
+        println("Turning off LED: Port=" + _port + ",Strip=" + _strip + ",Led" + _led);
+      }
     }
-    cameraDelayTimer = millis();
     finished = incrementLed();
     if (finished) {
       // we're done!
       saveLedLocsToJson(_ledPhysLocs, _outFilename);
-    }    
-    ledTryCounter = 0;
+    } else {
+      if (captureBkgndOnlyOnce) {
+        // Immediately turn on the next led
+        if (_strip < octos.get(_port).getNumStrips() && _led < octos.get(_port).getNumLedsPerStrip()) {
+          colorData[_strip][_led] = foregroundLedColor;
+          octos.get(_port).writeFrame(colorData);
+          if (LOG_LEVEL >= LOG_VERBOSE)  {
+            println("Turning on LED: Port=" + _port + ",Strip=" + _strip + ",Led" + _led);
+          }
+        }
+        cameraDelayTimer = millis();
+        getForeground = true;
+      } else {
+        cameraDelayTimer = millis();
+        getBackground = true;
+      }
+      ledTryCounter = 0;
+    }
   }
   if (!ledDetected) {
     ledContour = null;
     ledLocation = null;
+    if (captureBkgndOnlyOnce) {
+      getForeground = true;  
+    } else {
+      getBackground = true;
+    }
   }
 }
 
@@ -320,48 +367,53 @@ void captureImage() {
   }
   readCamera();
   if (millis() - cameraDelayTimer > cameraDelay){
-    if (getBkgnd) {
+    if (getBackground) {
       background.copy(cam, 0, 0, cam.width, cam.height, 0, 0, cam.width, cam.height);
-      
+      // ToDo: figure out parameters of background subtraction to avoid OpenCV re-init on each loop
+      //opencv = new OpenCV(this, cam.width, cam.height);
+      //opencv.startBackgroundSubtraction(2, 3, 0.5);
+      //opencv.loadImage(background);
+      //opencv.updateBackground();
+      if (LOG_LEVEL >= LOG_VERBOSE)  {
+        println("Updating Background");
+      }
       // Turn on the next led
       if (_strip < octos.get(_port).getNumStrips() && _led < octos.get(_port).getNumLedsPerStrip()) {
         colorData[_strip][_led] = foregroundLedColor;
         octos.get(_port).writeFrame(colorData);
+        if (LOG_LEVEL >= LOG_VERBOSE)  {
+          println("Turning on LED: Port=" + _port + ",Strip=" + _strip + ",Led" + _led);
+        }
       }
       cameraDelayTimer = millis();
-
-      // ToDo: figure out parameters of background subtraction to avoid OpenCV re-init on each loop
+      getForeground = true;
+      getBackground = false;
+    } else if (getForeground) {
       opencv = new OpenCV(this, cam.width, cam.height);
       opencv.startBackgroundSubtraction(2, 3, 0.5);
       opencv.loadImage(background);
       opencv.updateBackground();
-      if (LOG_LEVEL >= LOG_VERBOSE)  {
-        println("Updating Background");
-      }
       
-    } else {
-      if (opencv != null) {
-        foreground.copy(cam, 0, 0, cam.width, cam.height, 0, 0, cam.width, cam.height);
-        opencv.loadImage(foreground);
-        opencv.updateBackground();
-        //opencv.diff(foreground);
-        //diffImage = opencv.getSnapshot();
-        if (LOG_LEVEL >= LOG_VERBOSE)  {
-          println("Updating foreground");
-        }
-        opencv.erode();
-        opencv.dilate();
-        cvFindLed();
+      foreground.copy(cam, 0, 0, cam.width, cam.height, 0, 0, cam.width, cam.height);
+      opencv.loadImage(foreground);
+      opencv.updateBackground();
+      //opencv.diff(foreground);
+      //diffImage = opencv.getSnapshot();
+      if (LOG_LEVEL >= LOG_VERBOSE)  {
+        println("Updating foreground");
       }
+      opencv.erode();
+      opencv.dilate();
+      getForeground = false;
+      cvFindLed();
     }
-    getBkgnd = !getBkgnd;
   }
 }
 
 void readCamera() {
     cam.read();
     
-    if (cam.width > width || cam.height / 2 > height) {
+    if (background == null || foreground == null || cam.width > width || cam.height / 2 > height) {
       surface.setResizable(true);
       println("reset frame size: " + cam.width +","+ cam.height +","+ width +","+ height);
       surface.setSize(cam.width, cam.height / 2 + screenTextHeight + padding);
@@ -372,13 +424,7 @@ void readCamera() {
     }
 }
 
-void keyReleased() {
-  if (key == ' ') {
-    captureImage();
-  }
-}
-
-void saveLedLocsToJson(int[][][][] ledPhysLocs, outFileName) {
+void saveLedLocsToJson(int[][][][] ledPhysLocs, String outFileName) {
   println("Saving LED locations to file: " + outFileName);
   
   // ToDo: Move saveLedLocsToJson to ShapeToOcto static method
@@ -422,4 +468,13 @@ void saveLedLocsToJson(int[][][][] ledPhysLocs, outFileName) {
   ledPhysLocsJSON.setJSONArray("ports", ports);
   
   saveJSONObject(ledPhysLocsJSON, outFileName);
+}
+
+void keyReleased() {
+  if (key == ENTER || key == RETURN) {
+    readyToGo = true;
+  }
+  if (key == ' ') {
+    captureImage();
+  }
 }
