@@ -1,13 +1,19 @@
-/* captureLedLocs
+/*  
+    # captureLedLocs
+    ## Description
     Uses computer vision to detect LED locations controlled by OctoWS2811.
     Each LED is turned on one at a time and detected via background segmentation.
     Locations of detected LEDs are saved in ledPhysLocs.json
-    Usage:
-    - Plug in Teensy/Octos
-    - Plug in webcam (if not using integrated webcam)
-    - Change user-defined variables if desired
-    - Run program
-    - When program is complete ledPhysLocs.json has all led locations
+    ## Usage
+    * Plug in Teensy/Octos
+    * Plug in webcam (if not using integrated webcam)
+    * Aim webcam at LEDs so that nothing is moving in the frame
+    * Adjust webcam driver settings (exposure/brightness) and lighting conditions so that no frame areas with LEDs are blown out 
+    * Change user-defined variables if desired
+      * Increase cameraDelay if ANY lit LEDs EVER appear on the left camera frame image
+      * Increase camera resolution to improve location accuracy
+    * Run program
+    * When program is complete output json file has all led locations
 */
 
 import gab.opencv.*;
@@ -20,18 +26,22 @@ import java.awt.Color;
 
 // ----------- USER-DEFINED VARIABLES ------------- //
 
-String serialPorts[] = {"COM22"};  // Serial ports of Teensy/Octos
-String cameraName = "Microsoft LifeCam Studio,size=640x480,fps=30";
-int cameraDelay = 150;      // Delay between LED-ON and camera frame capture. If you ever see any LEDs lit on the left pane, increase this number
-int ledDrawRadius = 2;     // -1 uses computer vision detected radius
-int maxTriesPerLed = 2;     // Number of times to try detecting an LED before moving on to next LED
-int maxMissedLedsInRow = 3; // Number of failed LEDs before moving on to next strip
+String serialPorts[] = {"COM26"};  // Serial ports of Teensy/Octos
+String _outFilename = "data/ledPhysLocs.json";  // LED physical locations file
+int camHeight = 640;        // Camera frame width to request
+int camWidth = 480;         // Camera frame height to request
+int camFrameRate = 30;      // Camera frame rate to request
+int cameraDelay = 200;      // Delay between LED-ON and camera frame capture. If you ever see any LEDs lit on the left pane, increase this number
+int _ledDrawRadius = 2;     // -1 draws computer vision detected radius
+int maxTriesPerLed = 4;     // Number of times to try detecting an LED before skipping to next LED
+int maxMissedLedsInRow = 4; // Number of failed LEDs before skipping to next strip
 int minRadius = 1;          // Min size of CV LED detection
 int maxRadius = 100;        // Max size of CV LED detection
 int maxStrips = 8;          // Number of LED strips
-int maxLedsPerStrip = 400;   // Number of LEDs per strip
+int maxLedsPerStrip = 400;  // Number of LEDs per strip
 Color backgroundLedColor = new Color(0, 0, 0);    // Color of LEDs for background subtraction
 Color foregroundLedColor = new Color(255, 0, 0);  // Color of LEDs in ON state
+OctoWS2811.LedModes ledColorOrder = OctoWS2811.LedModes.RGB;  // LED color order
 
 // --------- END USER-DEFINED VARIABLES ------------- //
 
@@ -45,8 +55,8 @@ int _strip = 0;
 int _led = 0;
 int ledTryCounter = 0;
 int missedLeds = 0;
-color ledLocationColor = color(20, 200, 75);
-color ledContourColor = color(20, 75, 200);
+color _ledLocationColor = color(20, 200, 75);
+color _ledContourColor = color(20, 75, 200);
 int cameraDelayTimer = millis();
 
 int screenTextHeight = 48;
@@ -55,8 +65,6 @@ String screenText = "TESTING";
 
 PImage background;
 PImage foreground;
-PImage  diffImage;
-PImage drawImage;
 Contour ledContour = null;
 JSONObject ledLocation = null;
 JSONObject _ledPhysLocsJSON = new JSONObject();
@@ -77,6 +85,7 @@ void setup() {
   for (int j=0; j<serialPorts.length; j++) {
     octos.add(new OctoWS2811(this, serialPorts[j]));
     octos.get(j).setSerialMode(OctoWS2811.SerialModes.SERIAL_DISPLAY);
+    octo.setLedMode(ledColorOrder);    
   }
   
   initColorData();
@@ -96,14 +105,13 @@ void setup() {
       println(cameras[i]);
     }
     
-    // The camera can be initialized directly using an 
-    // element from the array returned by list():
     println("Loading: " + cameraName);
-    cam = new Capture(this, cameraName);
-    cam.start();     
+    cam = new Capture(this, camHeight, camWidth, camFrameRate);
+    println("Camera loaded: Width="+ cam.width + ", Height=" + cam.height + ", Rate=" + cam.frameRate);
+    cam.start();  
   }      
   
-  initLedPhysLocs();
+  initLedPhysLocs(); //<>//
 }
 
 void initLedPhysLocs() {
@@ -121,11 +129,11 @@ void initLedPhysLocs() {
 
 void draw() {
   
-  if (cam.available() == true && !finished) {
-    captureImage();
+  if (cam.available() == true && !finished) { //<>//
+    captureImage(); //<>//
   }
   
-  int bg = 50;
+  int bg = 50; //<>//
   fill(bg,bg,bg);
   stroke(bg,bg,bg);
   rect(0,0,width,height);
@@ -134,9 +142,7 @@ void draw() {
   scale(0.5);
   translate(0, screenTextHeight + padding);
   
-  if (foreground != null && background != null) {
-    //image(drawImage, 0, 0);
-  
+  if (foreground != null && background != null) { 
     
     image(background, 0, 0);
     image(foreground, background.width, 0);
@@ -154,11 +160,11 @@ void draw() {
         stroke(255, 0, 0);
         strokeWeight(3); 
         ledContour.draw();
-        stroke(ledContourColor);
+        stroke(_ledContourColor);
         ledContour.getConvexHull().draw();
       }
       if (ledLocation != null) {
-        stroke(ledLocationColor);
+        stroke(_ledLocationColor);
         ellipseMode(RADIUS);
         ellipse(ledLocation.getInt("x"), ledLocation.getInt("y"), ledLocation.getInt("radius"), ledLocation.getInt("radius"));
       } 
@@ -166,20 +172,16 @@ void draw() {
       screenText = "COMPLETE";
     }
     
-    drawLedPhysLocs();
+    drawLedPhysLocs(_ledPhysLocs, float _ledDrawRadius, color __ledLocationColor)
     
     translate(0, -(screenTextHeight + padding));
     textSize(screenTextHeight);
     textAlign(CENTER, CENTER);
-    fill(ledLocationColor);
+    fill(_ledLocationColor);
     text(screenText, background.width / 2, screenTextHeight / 2); 
   }
 
   popMatrix();
-}
-
-void movieEvent(Movie m) {
-  m.read();
 }
 
 boolean incrementLed() {
@@ -190,6 +192,12 @@ boolean incrementLed() {
   // Increment LED
   _led++;
   if (_led == maxLedsPerStrip || missedLeds == maxMissedLedsInRow) {
+    if (missedLeds == maxMissedLedsInRow) {
+      if (LOG_LEVEL >= LOG_NOTIFY) {
+        println("Hit maxMissedLedsInRow: Port=" + _port + ", Strip=" + _strip + ", LED=" + _led);
+        println("Skipping remainder of strip";
+      }
+    }
     _strip++;
     _led = 0;
     if (LOG_LEVEL >= LOG_VERBOSE)  {
@@ -246,7 +254,6 @@ void cvFindLed() {
       }
       ledContour = contours.get(maxIndex);
       Rectangle box = contours.get(maxIndex).getBoundingBox();
-      //rect(box.x, box.y, box.width, box.height);
       ledLocation = new JSONObject(); 
       ledLocation.setInt("x", box.x + box.width / 2);
       ledLocation.setInt("y", box.y + box.height / 2);
@@ -264,8 +271,13 @@ void cvFindLed() {
   ledTryCounter++;
   if (ledDetected || ledTryCounter == maxTriesPerLed) {
     if (ledTryCounter == maxTriesPerLed) {
+      if (LOG_LEVEL >= LOG_NOTIFY) {
+        println("LED not found: Port=" + _port + ", Strip=" + _strip + ", LED=" + _led);
+      }
       missedLeds++;
     }
+    
+    // Reset LED color and go to the next LED
     if (_strip < octos.get(_port).getNumStrips() && _led < octos.get(_port).getNumLedsPerStrip()) {
       colorData[_strip][_led] = backgroundLedColor;
       octos.get(_port).writeFrame(colorData);
@@ -273,36 +285,29 @@ void cvFindLed() {
     cameraDelayTimer = millis();
     finished = incrementLed();
     if (finished) {
-      // we're done! save!
-      saveLedLocsToJson(_ledPhysLocs);
+      // we're done!
+      saveLedLocsToJson(_ledPhysLocs, _outFilename);
     }    
     ledTryCounter = 0;
   }
-  //if (missedLeds == maxMissedLedsInRow) {
-  //  finished = true;
-  //  saveLedLocsToJson(_ledPhysLocs);
-  //}
   if (!ledDetected) {
     ledContour = null;
     ledLocation = null;
   }
 }
 
-void drawLedPhysLocs() {
-  if (LOG_LEVEL >= LOG_VERBOSE)  {
-      //println("drawLedPhysLocs()");
-  }
-  for (int p=0; p<_ledPhysLocs.length; p++) {
-    for (int s=0; s<_ledPhysLocs[p].length; s++) {
-      for (int l=0; l<_ledPhysLocs[p][s].length; l++) {
-        if (_ledPhysLocs[p][s][l][0] >= 0) {
-          stroke(ledLocationColor);
+void drawLedPhysLocs(int[][][][] ledPhysLocs, float ledDrawRadius, color _ledLocationColor) {
+  for (int p=0; p<ledPhysLocs.length; p++) {
+    for (int s=0; s<ledPhysLocs[p].length; s++) {
+      for (int l=0; l<ledPhysLocs[p][s].length; l++) {
+        if (ledPhysLocs[p][s][l][0] >= 0) {
+          stroke(_ledLocationColor);
           ellipseMode(RADIUS);
           if (ledDrawRadius < 0) {
-            ellipse(_ledPhysLocs[p][s][l][0], _ledPhysLocs[p][s][l][1], _ledPhysLocs[p][s][l][2], _ledPhysLocs[p][s][l][2]);
+            ellipse(ledPhysLocs[p][s][l][0], ledPhysLocs[p][s][l][1], ledPhysLocs[p][s][l][2], ledPhysLocs[p][s][l][2]);
           } 
           else {
-            ellipse(_ledPhysLocs[p][s][l][0], _ledPhysLocs[p][s][l][1], ledDrawRadius, ledDrawRadius);
+            ellipse(ledPhysLocs[p][s][l][0], ledPhysLocs[p][s][l][1], ledDrawRadius, ledDrawRadius);
           }
         }
       }
@@ -310,13 +315,13 @@ void drawLedPhysLocs() {
   } 
 }
 
-void fileSelected(File selection) {
-  if (selection == null) {
-    println("Window was closed or the user hit cancel.");
-  } else {
-    println("User selected " + selection.getAbsolutePath());
-  }
-}
+//void fileSelected(File selection) {
+//  if (selection == null) {
+//    println("Window was closed or the user hit cancel.");
+//  } else {
+//    println("User selected " + selection.getAbsolutePath());
+//  }
+//}
 
 void captureImage() {
   if (LOG_LEVEL >= LOG_VERBOSE)  {
@@ -334,14 +339,11 @@ void captureImage() {
       }
       cameraDelayTimer = millis();
 
+      // ToDo: figure out parameters of background subtraction to avoid OpenCV re-init on each loop
       opencv = new OpenCV(this, cam.width, cam.height);
       opencv.startBackgroundSubtraction(2, 3, 0.5);
       opencv.loadImage(background);
       opencv.updateBackground();
-      //opencv = new OpenCV(this, background);
-      drawImage = background;
-      //opencv.updateBackground();
-      //background = opencv.getSnapshot(opencv.getB()); 
       if (LOG_LEVEL >= LOG_VERBOSE)  {
         println("Updating Background");
       }
@@ -353,7 +355,6 @@ void captureImage() {
         opencv.updateBackground();
         //opencv.diff(foreground);
         //diffImage = opencv.getSnapshot();
-        drawImage = foreground;
         if (LOG_LEVEL >= LOG_VERBOSE)  {
           println("Updating foreground");
         }
@@ -377,11 +378,6 @@ void readCamera() {
       
       background = new PImage(cam.width, cam.height);
       foreground = new PImage(cam.width, cam.height);
-      drawImage = new PImage(cam.width, cam.height);
-      diffImage = new PImage(cam.width, cam.height);
-      
-      //opencv = new OpenCV(this, cam.width, cam.height);
-      //opencv.startBackgroundSubtraction(5, 3, 0.5);
     }
 }
 
@@ -391,8 +387,8 @@ void keyReleased() {
   }
 }
 
-void saveLedLocsToJson(int[][][][] ledPhysLocs) {
-  println("Saving LED locations to file...");
+void saveLedLocsToJson(int[][][][] ledPhysLocs, outFileName) {
+  println("Saving LED locations to file: " + outFileName);
 
   // JSON structure  
   //{'ports': [ 
@@ -432,5 +428,5 @@ void saveLedLocsToJson(int[][][][] ledPhysLocs) {
   }
   ledPhysLocsJSON.setJSONArray("ports", ports);
   
-  saveJSONObject(ledPhysLocsJSON, "ledPhysLocs.json");
+  saveJSONObject(ledPhysLocsJSON, outFileName);
 }
