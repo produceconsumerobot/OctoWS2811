@@ -1,20 +1,22 @@
-/*  
-    # captureLedLocs
-    ## Description
-    Uses computer vision to detect LED locations controlled by OctoWS2811.
-    Each LED is turned on one at a time and detected via background segmentation.
-    Locations of detected LEDs are saved in ledPhysLocs.json
-    ## Usage
-    * Plug in Teensy/Octos
-    * Plug in webcam (if not using integrated webcam)
-    * Aim webcam at LEDs so that nothing is moving in the frame
-    * Adjust webcam driver settings (exposure/brightness) and lighting conditions so that no frame areas with LEDs are blown out 
-    * Change user-defined variables if desired
-      * Increase cameraDelay if ANY lit LEDs EVER appear on the left camera frame image
-      * Increase camera resolution to improve location accuracy
-    * Run program
-    * When program is complete output json file has all led locations
-*/
+/**************************************************
+# captureLedLocs.pde
+## Description
+Uses computer vision to detect LED locations controlled by OctoWS2811.
+Each LED is turned on one at a time and detected via background segmentation.
+Locations of detected LEDs are saved in a json file
+## Usage
+* Plug in Teensy/Octos
+* Plug in webcam (if not using integrated webcam)
+* Aim webcam at LEDs so that nothing is moving in the frame
+* Adjust webcam driver settings (exposure/brightness) and lighting conditions so that no frame areas with LEDs are blown out 
+* Change user-defined variables if desired
+  * Increase cameraDelay if ANY lit LEDs EVER appear on the left camera frame image
+  * Increase camera resolution to improve location accuracy
+* Run program
+* When program is complete output json file has all led locations (recommended to make a backup copy of this file)
+
+Created by Sean Montgomery 2018-06-05 
+***************************************************/
 
 import gab.opencv.*;
 import processing.video.*;
@@ -115,6 +117,7 @@ void setup() {
 }
 
 void initLedPhysLocs() {
+  // ToDo: consider moving to ShapeToOcto static method
   _ledPhysLocs = new int[serialPorts.length][maxStrips][maxLedsPerStrip][3];
   for (int p=0; p<_ledPhysLocs.length; p++) {
     for (int s=0; s<_ledPhysLocs[p].length; s++) {
@@ -222,6 +225,8 @@ boolean incrementLed() {
 
 void initColorData() {
   // setup colorData matrix
+  
+  // ToDo: consider moving to OctoWS2811 static method
   colorData = new Color[octos.get(_port).getNumStrips()][octos.get(_port).getNumLedsPerStrip()];
   for (int s=0; s < colorData.length; s++) {
     for (int l=0; l < colorData[s].length; l++) {
@@ -297,6 +302,8 @@ void cvFindLed() {
 }
 
 void drawLedPhysLocs(int[][][][] ledPhysLocs, float ledDrawRadius, color _ledLocationColor) {
+  // ToDo: consider moving to ShapeToOcto static method
+  
   for (int p=0; p<ledPhysLocs.length; p++) {
     for (int s=0; s<ledPhysLocs[p].length; s++) {
       for (int l=0; l<ledPhysLocs[p][s].length; l++) {
@@ -389,6 +396,8 @@ void keyReleased() {
 
 void saveLedLocsToJson(int[][][][] ledPhysLocs, outFileName) {
   println("Saving LED locations to file: " + outFileName);
+  
+  // ToDo: Move saveLedLocsToJson to ShapeToOcto static method
 
   // JSON structure  
   //{'ports': [ 
