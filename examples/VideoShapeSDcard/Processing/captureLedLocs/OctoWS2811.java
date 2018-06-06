@@ -41,6 +41,14 @@ public class OctoWS2811 {
     RGB,
     GRB;
   }
+  
+  public static final int LOG_SILENT = 0;
+  public static final int LOG_FATAL_ERROR = 1;
+  public static final int LOG_ERROR = 2;
+  public static final int LOG_WARNING = 3;
+  public static final int LOG_NOTIFY = 4;
+  public static final int LOG_VERBOSE = 5;
+  private int LOG_LEVEL;
  
   private boolean _isMaster;
   private String _serialPort;
@@ -56,7 +64,7 @@ public class OctoWS2811 {
   private PApplet _pApplet;
   int[] _gammatable;
   private float _gamma;
-   //<>//
+     //<>//
   public OctoWS2811(PApplet pApplet, String serialPort) {
     if (pApplet != null) {
       init();
@@ -84,6 +92,11 @@ public class OctoWS2811 {
     _gammatable = new int[256];
     _gamma = 1.8f;
     setupGammaTable(_gamma);
+    LOG_LEVEL = LOG_ERROR;
+  }
+  
+  public void setLogLevel(int logLevel) {
+    LOG_LEVEL = logLevel;
   }
   
   public int getNumStrips() {
@@ -298,11 +311,20 @@ public class OctoWS2811 {
   private int serialConfigure(String portName) {
     
     int errorCount = 0;
-    //Serial ledSerial = _ledSerial;
+
+    System.out.println("Available serial ports: ");
+    String[] serialList = Serial.list();
+    if (serialList.length == 0) {
+      System.out.println("[none]");
+    } else {
+      for (int s = 0; s < serialList.length; s++) {
+        System.out.println(serialList[s]);
+      }
+    }
+    
     try {
       _ledSerial = new Serial(_pApplet, portName);
       if (_ledSerial == null) {
-        Serial.list();
         throw new NullPointerException();
       }
       // Clear the serial buffer
@@ -310,7 +332,7 @@ public class OctoWS2811 {
       while (line != null) {
         Thread.sleep(100);
         line = _ledSerial.readStringUntil(10);
-        System.out.println("Serial read data: " + line);
+        System.out.println("Serial flush data: " + line);
       }
       // Switch Teensy to SERIAL_serialMode
       _ledSerial.write('^');
