@@ -12,15 +12,15 @@ import java.awt.Color;
 
 // ----------- USER-DEFINED VARIABLES ------------- //
 
-String serialPorts[] = {"COM22"};  // Serial ports of Teensy/Octos
+String serialPorts[] = {"COM30"};  // Serial ports of Teensy/Octos
 String _outFilename = "data/ledPhysLocs.json";  // LED physical locations file
 int camWidth = 640;         // Camera frame height to request
 int camHeight = 480;        // Camera frame width to request
 int camFrameRate = 30;      // Camera frame rate to request
 int cameraDelay = 200;      // Delay between LED-ON and camera frame capture. If you ever see any LEDs lit on the left pane, increase this number
-int _ledDrawRadius = 2;     // -1 draws computer vision detected radius
-int maxTriesPerLed = 10;     // Number of times to try detecting an LED before skipping to next LED
-int maxMissedLedsInRow = 5; // Number of failed LEDs before skipping to next strip
+int _ledDrawRadius = -1;     // -1 draws computer vision detected radius
+int maxTriesPerLed = 5;     // Number of times to try detecting an LED before skipping to next LED
+int maxMissedLedsInRow = 6  ; // Number of failed LEDs before skipping to next strip
 int minRadius = 1;          // Min size of CV LED detection
 int maxRadius = 100;        // Max size of CV LED detection
 int maxStrips = 8;          // Number of LED strips
@@ -285,7 +285,7 @@ void cvFindLed() {
   if (ledDetected || ledTryCounter == maxTriesPerLed) {
     if (ledTryCounter == maxTriesPerLed) {
       if (LOG_LEVEL >= LOG_NOTIFY) {
-        println("LED not found: Port=" + _port + ", Strip=" + _strip + ", LED=" + _led);
+        println("** LED not found: Port=" + _port + ", Strip=" + _strip + ", LED=" + _led + " **");
       }
       missedLeds++;
     }
