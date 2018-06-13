@@ -113,7 +113,6 @@ import java.lang.reflect.Field;
 int[][][][] ledPhysLocs;
 String ledPhysLocsFilename = "ledPhysLocs_LongCrystal_01.json";
 String moviePath = "C:/priv/gd2/Dropbox/LocalDev/Sean/Processing/Processing3.0/OctoWS2811/examples/VideoShapeSDcard/Processing/movie2shapeSdcard/flower2_sm.mp4";
-boolean movieForwardReverse = true;
 
 String[] outFileNames = {"C:/priv/gd2/Dropbox/LocalDev/Sean/Processing/Processing3.0/OctoWS2811/examples/VideoShapeSDcard/Processing/movie2shapeSdcard/VIDEO_01.BIN"};
 String[] serialPorts = {"COM26"}; 
