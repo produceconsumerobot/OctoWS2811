@@ -111,8 +111,9 @@ import java.lang.reflect.Field;
 //};
 
 int[][][][] ledPhysLocs;
-String ledPhysLocsFilename = "ledPhysLocs_Led_Sun_01.json";
-String moviePath = "C:/priv/gd2/Dropbox/LocalDev/Sean/Processing/Processing3.0/OctoWS2811/examples/VideoShapeSDcard/Processing/movie2shapeSdcard/Cool.mp4";
+String ledPhysLocsFilename = "ledPhysLocs_LongCrystal_01.json";
+String moviePath = "C:/priv/gd2/Dropbox/LocalDev/Sean/Processing/Processing3.0/OctoWS2811/examples/VideoShapeSDcard/Processing/movie2shapeSdcard/flower2_sm.mp4";
+boolean movieForwardReverse = true;
 
 String[] outFileNames = {"C:/priv/gd2/Dropbox/LocalDev/Sean/Processing/Processing3.0/OctoWS2811/examples/VideoShapeSDcard/Processing/movie2shapeSdcard/VIDEO_01.BIN"};
 String[] serialPorts = {"COM26"}; 
@@ -582,7 +583,11 @@ void draw() {
   }
   
   if (sdWriteOn) {
-    if (myMovie.time() >= myMovie.duration()) {
+    if (LOG_LEVEL >= LOG_VERBOSE) {
+      println(myMovie.time() + " / " + myMovie.duration());
+    }
+    //if (myMovie.time() >= myMovie.duration()) {
+    if (myMovie.time() >= myMovie.duration() - 1 / myParams.targetFrameRate) {
       println("Movie SD writing complete!");
       myMovie.stop();
       isPlaying = false;
@@ -592,6 +597,7 @@ void draw() {
   
   if (serialSdWriteOn) {
     //if (myMovie.time() >= 10) {
+    //if (myMovie.time() >= myMovie.duration()) {
     if (myMovie.time() >= myMovie.duration() - 1 / myParams.targetFrameRate) {
       println("Movie serial SD writing complete!");
       myMovie.stop();
@@ -640,7 +646,7 @@ void setupSdWrite() {
 
 // Close SD card output file writing
 void closeSdWrite() {
-  if (filesopen) {
+  if (filesopen) { //<>//
     println("movie stop, closing output file");
     for (int i=0; i<outFileNames.length; i++) {
       try {
