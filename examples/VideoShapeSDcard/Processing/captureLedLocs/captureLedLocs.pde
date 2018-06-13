@@ -12,15 +12,15 @@ import java.awt.Color;
 
 // ----------- USER-DEFINED VARIABLES ------------- //
 
-String serialPorts[] = {"COM28"};  // Serial ports of Teensy/Octos
+String serialPorts[] = {"COM22"};  // Serial ports of Teensy/Octos
 String _outFilename = "data/ledPhysLocs.json";  // LED physical locations file
-int camHeight = 640;        // Camera frame width to request
-int camWidth = 480;         // Camera frame height to request
+int camWidth = 640;         // Camera frame height to request
+int camHeight = 480;        // Camera frame width to request
 int camFrameRate = 30;      // Camera frame rate to request
 int cameraDelay = 200;      // Delay between LED-ON and camera frame capture. If you ever see any LEDs lit on the left pane, increase this number
 int _ledDrawRadius = 2;     // -1 draws computer vision detected radius
-int maxTriesPerLed = 4;     // Number of times to try detecting an LED before skipping to next LED
-int maxMissedLedsInRow = 4; // Number of failed LEDs before skipping to next strip
+int maxTriesPerLed = 10;     // Number of times to try detecting an LED before skipping to next LED
+int maxMissedLedsInRow = 5; // Number of failed LEDs before skipping to next strip
 int minRadius = 1;          // Min size of CV LED detection
 int maxRadius = 100;        // Max size of CV LED detection
 int maxStrips = 8;          // Number of LED strips
@@ -69,7 +69,7 @@ boolean finished = false;
 boolean readyToGo = false;
 
 void setup() {
-  size(640, 480);
+  size(1200, 900);
   
   for (int j=0; j<serialPorts.length; j++) {
     octos.add(new OctoWS2811(this, serialPorts[j]));
@@ -97,7 +97,7 @@ void setup() {
     }
     
     //println("Loading: " + cameraName);
-    cam = new Capture(this, camHeight, camWidth, camFrameRate);
+    cam = new Capture(this, camWidth, camHeight, camFrameRate);
     println("Camera loaded: Width="+ cam.width + ", Height=" + cam.height + ", Rate=" + cam.frameRate);
     cam.start();  
   }    
@@ -135,7 +135,7 @@ void draw() {
     rect(0,0,width,height);
     
     pushMatrix();
-    scale(0.5);
+    //scale(0.5);
     translate(0, screenTextHeight + padding);
     
     if (foreground != null && background != null) { 
@@ -204,8 +204,8 @@ boolean incrementLed() {
   if (_led == maxLedsPerStrip || missedLeds >= maxMissedLedsInRow) {
     if (missedLeds >= maxMissedLedsInRow) {
       if (LOG_LEVEL >= LOG_NOTIFY) {
-        println("Hit maxMissedLedsInRow: Port=" + _port + ", Strip=" + _strip + ", LED=" + _led);
-        println("Skipping remainder of strip");
+        println("**** Hit maxMissedLedsInRow: Port=" + _port + ", Strip=" + _strip + ", LED=" + _led + "****");
+        println("**** Skipping remainder of strip ****");
       }
       missedLeds = 0;
     }
@@ -324,6 +324,7 @@ void cvFindLed() {
   if (!ledDetected) {
     ledContour = null;
     ledLocation = null;
+    cameraDelayTimer = millis();
     if (captureBkgndOnlyOnce) {
       getForeground = true;  
     } else {
@@ -416,7 +417,8 @@ void readCamera() {
     if (background == null || foreground == null || cam.width > width || cam.height / 2 > height) {
       surface.setResizable(true);
       println("reset frame size: " + cam.width +","+ cam.height +","+ width +","+ height);
-      surface.setSize(cam.width, cam.height / 2 + screenTextHeight + padding);
+      surface.setSize(cam.width*2, cam.height + (screenTextHeight + padding) * 2);
+      //surface.setSize(cam.width, cam.height / 2 + screenTextHeight + padding);
       surface.setResizable(false);
       
       background = new PImage(cam.width, cam.height);
